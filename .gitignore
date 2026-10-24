@@ -1,0 +1,9 @@
+# Firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+node_modules/

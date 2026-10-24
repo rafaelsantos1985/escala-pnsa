@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Escalas Litúrgicas & Comunitárias</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="pnsa.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261024_4">
+</head>
+<body class="theme-light">
+  <!-- Marca d'água elegante de fundo -->
+  <div class="watermark-bg" aria-hidden="true" style="background-image: url('pnsa.png');"></div>
+
+  <div class="app-layout">
+    <!-- Barra Superior e Menu de Navegação Fixos (Travados na rolagem) -->
+    <div class="sticky-top-wrapper">
+      <!-- Barra Superior / Header -->
+      <header class="app-header">
+        <div class="header-container">
+          <div class="brand-group">
+            <div class="brand-text">
+              <span class="brand-badge">Gestão Inteligente</span>
+              <h1 class="brand-title">Sistema de Escalas</h1>
+              <p class="brand-subtitle">
+                <svg class="brand-church-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold-400); margin-right:6px; flex-shrink:0;"><path d="M18 20V10l-6-5-6 5v10h12z"></path><path d="M12 2v3"></path><path d="M10 3.5h4"></path><path d="M10 20v-5a2 2 0 0 1 4 0v5"></path></svg>
+                Paróquia Nossa Senhora Aparecida
+              </p>
+              <span class="brand-location">Cidade Industrial - Lorena/SP</span>
+            </div>
+          </div>
+
+          <!-- Centro do Header: Status e Contingente de Ministros Centralizados -->
+          <div class="header-center-actions">
+            <div class="quick-status-chip" id="db-status-chip" title="Verificando conexão com o banco de dados...">
+              <span class="status-dot" id="db-status-dot" style="background:#94a3b8;"></span>
+              <span id="db-status-text">Banco de Dados</span>
+            </div>
+
+            <div class="quick-status-chip">
+              <span class="status-dot"></span>
+              <span id="active-members-count">0 de 0 Ministros Ativos</span>
+            </div>
+          </div>
+
+          <!-- Direita do Header: Brasão Paroquial com Brilho Dinâmico -->
+          <div class="header-right-crest">
+            <div class="header-live-crest-wrapper" title="Paróquia Nossa Senhora Aparecida">
+              <div class="crest-live-glow"></div>
+              <img src="pnsa.png" alt="Paróquia Nossa Senhora Aparecida" class="header-live-crest">
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Navegação de Abas Principal -->
+      <nav class="main-tabs-nav">
+        <div class="nav-container">
+          <div class="tabs-list" role="tablist">
+            <button class="tab-btn active" data-tab="tab-dashboard" role="tab" aria-selected="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <span>Painel Geral</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-members" role="tab" aria-selected="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>Ministros</span>
+              <span class="tab-badge" id="members-badge">0</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-generator" role="tab" aria-selected="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Gerar Escala</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-calendar" role="tab" aria-selected="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
+              <span>Visualizar Escalas</span>
+              <span class="tab-pill" id="schedule-active-pill" style="display:none;">Ativa</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-festas" role="tab" aria-selected="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <span>Dias de Festa</span>
+              <span class="tab-badge gold" id="festas-count-badge">0</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+      <div class="content-container">
+
+        <!-- ==================== ABA 1: DASHBOARD ==================== -->
+        <section id="tab-dashboard" class="tab-pane active fade-in">
+          <!-- Banner de Boas-vindas Litúrgico -->
+          <div class="welcome-banner">
+            <div class="banner-overlay"></div>
+            <div class="banner-content">
+              <div class="banner-tag">
+                <span class="sparkle-icon">✨</span> Planejamento e Organização
+              </div>
+              <h2 class="banner-title">Painel de Controle de Escalas</h2>
+              <p class="banner-desc">
+                Organize a participação de ministros em categorias estruturadas: 
+                <strong>Segunda a Sexta</strong>, <strong>Sábado e Domingo</strong> e <strong>Dias de Festa</strong>. 
+                O sistema de rotação circular garante que todos participem de forma justa e contínua.
+              </p>
+              <div class="banner-actions">
+                <button class="btn btn-gold" onclick="App.switchTab('tab-generator')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  Gerar Nova Escala
+                </button>
+                <button class="btn btn-outline-light" onclick="App.switchTab('tab-members')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                  Gerenciar Inscritos
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards de Métricas Principais -->
+          <div class="metrics-grid">
+            <div class="metric-card card-navy">
+              <div class="metric-icon-wrap bg-blue-subtle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+              <div class="metric-body">
+                <span class="metric-label">Inscritos Totais</span>
+                <span class="metric-value" id="dash-total-members">0</span>
+                <span class="metric-subtext" id="dash-active-ratio">0 ativos na rotação</span>
+              </div>
+            </div>
+
+            <div class="metric-card card-gold">
+              <div class="metric-icon-wrap bg-gold-subtle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              </div>
+              <div class="metric-body">
+                <span class="metric-label">Status do Ciclo</span>
+                <span class="metric-value" id="dash-cycle-pos">0 / 0</span>
+                <span class="metric-subtext" id="dash-next-person">Próximo: Nenhum</span>
+              </div>
+            </div>
+
+            <div class="metric-card card-teal">
+              <div class="metric-icon-wrap bg-teal-subtle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </div>
+              <div class="metric-body">
+                <span class="metric-label">Escala Vigente</span>
+                <span class="metric-value" id="dash-current-month">-</span>
+                <span class="metric-subtext" id="dash-total-shifts">0 celebrações escaladas</span>
+              </div>
+            </div>
+
+            <div class="metric-card card-purple">
+              <div class="metric-icon-wrap bg-purple-subtle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </div>
+              <div class="metric-body">
+                <span class="metric-label">Dias de Festa</span>
+                <span class="metric-value" id="dash-festas-count">0</span>
+                <span class="metric-subtext">Datas comemorativas cadastradas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção de Acesso Rápido às 3 Categorias de Escala -->
+          <div class="dashboard-sections-grid">
+            <!-- Coluna 1: As 3 Categorias de Escala -->
+            <div class="card glass-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Modalidades de Escala</h3>
+                  <p class="card-desc">Divisão estipulada para a distribuição dos inscritos</p>
+                </div>
+                <span class="badge badge-primary">3 Tipos</span>
+              </div>
+              <div class="categories-list">
+                <div class="category-item-card cat-weekday">
+                  <div class="category-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  </div>
+                  <div class="category-info">
+                    <div class="category-title-row">
+                      <h4>Segunda à Sexta</h4>
+                      <span class="tag tag-weekday">Dias de Semana</span>
+                    </div>
+                    <p>Celebrações e atividades de dias de semana ordinários.</p>
+                  </div>
+                  <div class="category-stats">
+                    <span class="stat-count" id="count-shift-weekday">0</span>
+                    <span class="stat-lbl">dias escalados</span>
+                  </div>
+                </div>
+
+                <div class="category-item-card cat-weekend">
+                  <div class="category-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                  </div>
+                  <div class="category-info">
+                    <div class="category-title-row">
+                      <h4>Sábado e Domingo</h4>
+                      <span class="tag tag-weekend">Finais de Semana</span>
+                    </div>
+                    <p>Celebrações de preceito dominical e vigílias de sábado.</p>
+                  </div>
+                  <div class="category-stats">
+                    <span class="stat-count" id="count-shift-weekend">0</span>
+                    <span class="stat-lbl">dias escalados</span>
+                  </div>
+                </div>
+
+                <div class="category-item-card cat-festa">
+                  <div class="category-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  </div>
+                  <div class="category-info">
+                    <div class="category-title-row">
+                      <h4>Dias de Festa ("Festa")</h4>
+                      <span class="tag tag-festa">Solenidades & Especiais</span>
+                    </div>
+                    <p>Padroeiro, Tríduo, Natal, Páscoa e dias de solenidade especial.</p>
+                  </div>
+                  <div class="category-stats">
+                    <span class="stat-count" id="count-shift-festa">0</span>
+                    <span class="stat-lbl">dias escalados</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coluna 2: Fila de Rotação Cíclica Ativa -->
+            <div class="card glass-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Fila Circular em Andamento</h3>
+                  <p class="card-desc">Ordem dos próximos a serem escalados até o reinício do ciclo</p>
+                </div>
+                <button class="btn btn-sm btn-outline" onclick="App.resetRotationPointer()" title="Reiniciar ciclo do início">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                  Reiniciar Ponteiro
+                </button>
+              </div>
+
+              <div class="rotation-queue-wrapper">
+                <div id="rotation-queue-list" class="queue-list">
+                  <!-- Injetado dinamicamente via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== ABA 2: GERENCIAMENTO DE PESSOAS ==================== -->
+        <section id="tab-members" class="tab-pane fade-in">
+          <div class="members-management-grid">
+            <!-- Formulário de Adicionar Pessoa -->
+            <div class="card add-member-card">
+              <div class="card-header">
+                <h3 class="card-title">Novo Inscrito</h3>
+                <span class="badge badge-gold">Cadastro Rápido</span>
+              </div>
+              <form id="add-member-form" onsubmit="App.handleAddMember(event)" novalidate>
+                <div class="form-group" id="form-group-add-name">
+                  <label for="member-name-input">Nome Completo ou Apelido</label>
+                  <div class="input-with-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="text" id="member-name-input" placeholder="Ex: Maria Aparecida, Carlos Silva..." autocomplete="off">
+                  </div>
+                </div>
+
+                <div class="form-group" id="form-group-add-role" style="display: none;">
+                  <label>Função / Ministério (Selecione as funções que exerce)</label>
+                  <div class="roles-checklist-container">
+                    <label class="role-check-item">
+                      <input type="checkbox" name="role_add" value="Ministro da Eucaristia" checked onchange="App.handleRoleChange('add')">
+                      <span class="role-check-custom"></span>
+                      <span>Ministro da Eucaristia</span>
+                    </label>
+                    <label class="role-check-item">
+                      <input type="checkbox" name="role_add" value="Acolhida" onchange="App.handleRoleChange('add')">
+                      <span class="role-check-custom"></span>
+                      <span>Acolhida</span>
+                    </label>
+                    <label class="role-check-item">
+                      <input type="checkbox" name="role_add" value="Comentarista" onchange="App.handleRoleChange('add')">
+                      <span class="role-check-custom"></span>
+                      <span>Comentarista</span>
+                    </label>
+                    <label class="role-check-item">
+                      <input type="checkbox" name="role_add" value="Acólito" onchange="App.handleRoleChange('add')">
+                      <span class="role-check-custom"></span>
+                      <span>Acólito</span>
+                    </label>
+                    <label class="role-check-item">
+                      <input type="checkbox" name="role_add" value="Coroinha" onchange="App.handleRoleChange('add')">
+                      <span class="role-check-custom"></span>
+                      <span>Coroinha</span>
+                    </label>
+                    <label class="role-check-item">
+                      <input type="checkbox" name="role_add" value="Irmão do Santíssimo" onchange="App.handleRoleChange('add')">
+                      <span class="role-check-custom"></span>
+                      <span>Irmão do Santíssimo</span>
+                    </label>
+                    <label class="role-check-item">
+                      <input type="checkbox" id="add-role-outro-check" name="role_add" value="Outro" onchange="App.handleRoleChange('add')">
+                      <span class="role-check-custom"></span>
+                      <span>Outro</span>
+                    </label>
+                  </div>
+                  <div id="add-role-outro-wrap" class="role-outro-input-wrap" style="display: none;">
+                    <input type="text" id="add-role-outro-input" placeholder="Qual função? (Ex: Cerimoniário, Músico, etc.)">
+                  </div>
+                </div>
+
+                <div class="form-group text-center-group" id="form-group-add-pref">
+                  <label class="text-center-label">Disponibilidade (Modalidades)</label>
+                  <div class="checkbox-options-centered">
+                    <label class="checkbox-pill cat-weekday-pill">
+                      <input type="checkbox" id="add-pref-weekday" value="weekday">
+                      <span class="pill-check-indicator"></span>
+                      <span>Segunda à Sexta</span>
+                    </label>
+
+                    <label class="checkbox-pill cat-weekend-pill">
+                      <input type="checkbox" id="add-pref-weekend" value="weekend">
+                      <span class="pill-check-indicator"></span>
+                      <span>Sábado e Domingo</span>
+                    </label>
+
+                    <label class="checkbox-pill cat-festa-pill">
+                      <input type="checkbox" id="add-pref-festa" value="festa">
+                      <span class="pill-check-indicator"></span>
+                      <span>Dias de Festa</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group text-center-group" id="form-group-add-time">
+                  <label class="text-center-label">Horários de Disponibilidade (Regra para Escalar)</label>
+                  <div class="checkbox-options-centered time-options-centered">
+                    <label class="checkbox-pill time-pill time-pill-07" title="Disponível para celebrações às 07:00">
+                      <input type="checkbox" id="add-time-0700" value="07:00" onchange="App.handleTimeCheckChange('add')">
+                      <span class="pill-check-indicator"></span>
+                      <span>🌅 07:00</span>
+                    </label>
+
+                    <label class="checkbox-pill time-pill time-pill-15" title="Disponível para celebrações/novena às 15:00">
+                      <input type="checkbox" id="add-time-1500" value="15:00" onchange="App.handleTimeCheckChange('add')">
+                      <span class="pill-check-indicator"></span>
+                      <span>☀️ 15:00</span>
+                    </label>
+
+                    <label class="checkbox-pill time-pill time-pill-19" title="Disponível para celebrações às 19:00">
+                      <input type="checkbox" id="add-time-1900" value="19:00" onchange="App.handleTimeCheckChange('add')">
+                      <span class="pill-check-indicator"></span>
+                      <span>🌙 19:00</span>
+                    </label>
+
+                    <label class="checkbox-pill time-pill time-pill-outro" title="Disponível para outros horários (ex: 19:30, 08:00 - usado em exceções)">
+                      <input type="checkbox" id="add-time-outro-check" value="outro" onchange="App.handleTimeCheckChange('add')">
+                      <span class="pill-check-indicator"></span>
+                      <span>⏰ OUTRO</span>
+                    </label>
+                  </div>
+                  <div id="add-time-outro-wrap" class="role-outro-input-wrap" style="display: none; margin-top: 6px;">
+                    <input type="text" id="add-time-outro-input" maxlength="5" placeholder="HH:MM (Ex: 20:00)" oninput="App.formatTimeInput(this)">
+                  </div>
+                </div>
+
+                <!-- Comunidade onde serve -->
+                <div class="form-group" id="form-group-add-community">
+                  <label for="add-member-community">Comunidade onde serve</label>
+                  <select id="add-member-community" onchange="App.handleCommunityChange('add')" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border-strong); background-color: var(--bg-card); color: var(--text-main); font-weight: 600;">
+                    <option value="Matriz">Matriz</option>
+                    <option value="Santa Terezinha">Santa Terezinha</option>
+                    <option value="São Cristóvão">São Cristóvão</option>
+                    <option value="São Miguel">São Miguel</option>
+                    <option value="São José Operário">São José Operário</option>
+                    <option value="OUTRO">OUTRO (Especificar)</option>
+                  </select>
+                  <div id="add-community-outro-wrap" style="display: none; margin-top: 6px;">
+                    <input type="text" id="add-community-outro-input" placeholder="Qual outra comunidade?">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  Adicionar
+                </button>
+              </form>
+            </div>
+
+            <!-- Lista de Inscritos -->
+            <div class="card members-list-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <h3 class="card-title">Participantes Cadastrados</h3>
+                  <p class="card-desc">Arraste para reorganizar ou use os botões para alterar a ordem da fila</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div class="search-input-wrap">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="members-search" placeholder="Buscar por nome..." oninput="App.filterMembersList()">
+                  </div>
+                  <button type="button" class="btn-icon-action delete-all-members-btn" onclick="App.clearAllMembers()" title="Excluir Todos os Ministros" aria-label="Excluir Todos os Ministros" style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(239, 68, 68, 0.1); border: 1.5px solid rgba(239, 68, 68, 0.35); color: #ef4444; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Barra Unificada de Filtros: Modalidades (Cumulativas), Serviço e Comunidade -->
+              <div class="members-filter-bar">
+                <!-- Linha 1: Modalidades -->
+                <div class="members-filter-row">
+                  <!-- Filtro por Modalidade (Cumulativo) -->
+                  <div class="filter-group-inline" style="width: 100%;">
+                    <span class="filter-group-label">Modalidade:</span>
+                    <div class="filter-buttons-list">
+                      <button type="button" class="filter-pill active" id="mod-filter-all" data-mod-filter="all" onclick="App.toggleMemberModalityFilter('all')">Todas</button>
+                      <button type="button" class="filter-pill" id="mod-filter-weekday" data-mod-filter="weekday" onclick="App.toggleMemberModalityFilter('weekday')">Segunda à Sexta</button>
+                      <button type="button" class="filter-pill" id="mod-filter-weekend" data-mod-filter="weekend" onclick="App.toggleMemberModalityFilter('weekend')">Sábado e Domingo</button>
+                      <button type="button" class="filter-pill" id="mod-filter-festa" data-mod-filter="festa" onclick="App.toggleMemberModalityFilter('festa')">Dias de Festa</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Linha 2: Filtro por Comunidade (Botões lado a lado no mesmo formato) -->
+                <div class="members-filter-row">
+                  <div class="filter-group-inline" style="width: 100%;">
+                    <span class="filter-group-label">Comunidade:</span>
+                    <div class="filter-buttons-list">
+                      <button type="button" class="filter-pill active" id="comm-filter-all" data-comm-filter="all" onclick="App.toggleMemberCommunityFilter('all')">Todas</button>
+                      <button type="button" class="filter-pill" id="comm-filter-matriz" data-comm-filter="Matriz" onclick="App.toggleMemberCommunityFilter('Matriz')">Matriz</button>
+                      <button type="button" class="filter-pill" id="comm-filter-santa-terezinha" data-comm-filter="Santa Terezinha" onclick="App.toggleMemberCommunityFilter('Santa Terezinha')">Santa Terezinha</button>
+                      <button type="button" class="filter-pill" id="comm-filter-sao-cristovao" data-comm-filter="São Cristóvão" onclick="App.toggleMemberCommunityFilter('São Cristóvão')">São Cristóvão</button>
+                      <button type="button" class="filter-pill" id="comm-filter-sao-miguel" data-comm-filter="São Miguel" onclick="App.toggleMemberCommunityFilter('São Miguel')">São Miguel</button>
+                      <button type="button" class="filter-pill" id="comm-filter-sao-jose" data-comm-filter="São José Operário" onclick="App.toggleMemberCommunityFilter('São José Operário')">São José Operário</button>
+                      <button type="button" class="filter-pill" id="comm-filter-outro" data-comm-filter="OUTRO" onclick="App.toggleMemberCommunityFilter('OUTRO')">Outra</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="members-table-container">
+                <table class="modern-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 36px; text-align: center;">#</th>
+                      <th>Ministro</th>
+                      <th>Comunidade</th>
+                      <th>Disponibilidade & Horários</th>
+                      <th style="text-align: center;">Escalado</th>
+                      <th style="text-align: center;">Status</th>
+                      <th style="text-align: right; width: 70px;">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="members-table-body">
+                    <!-- Gerado dinamicamente -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Barra de Paginação (20 em 20 ministros) -->
+              <div class="members-pagination-bar" id="members-pagination-bar" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-top: 1px solid var(--border-color); background: rgba(0,0,0,0.01); font-size: 0.85rem; flex-wrap: wrap; gap: 8px;">
+                <span id="members-pagination-info" style="color: var(--text-muted); font-weight: 600;">Mostrando 1 - 20 de 23 ministros</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="btn btn-sm btn-outline" id="members-prev-btn" onclick="App.changeMembersPage(-1)">← Anterior</button>
+                  <span id="members-page-display" style="font-weight: 700; color: var(--text-main); padding: 0 4px;">Página 1 de 2</span>
+                  <button type="button" class="btn btn-sm btn-outline" id="members-next-btn" onclick="App.changeMembersPage(1)">Próxima →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== ABA 3: GERADOR DE ESCALAS ==================== -->
+        <section id="tab-generator" class="tab-pane fade-in">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="section-title">Gerador Inteligente de Escala</h2>
+              <p class="section-subtitle">Configure o mês, os turnos e deixe o algoritmo circular distribuir as datas</p>
+            </div>
+          </div>
+
+          <div class="generator-layout-grid">
+            <!-- Configurações do Gerador -->
+            <div class="card generator-config-card">
+              <div class="card-header">
+                <h3 class="card-title">Parâmetros da Escala</h3>
+                <span class="badge badge-primary">Configurações</span>
+              </div>
+
+              <form id="schedule-generate-form" onsubmit="App.handleGenerateSchedule(event)">
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label for="gen-month-select">Mês da Escala</label>
+                    <select id="gen-month-select" required onchange="App.handleSegmentChange()">
+                      <option value="0">Janeiro</option>
+                      <option value="1">Fevereiro</option>
+                      <option value="2">Março</option>
+                      <option value="3">Abril</option>
+                      <option value="4">Maio</option>
+                      <option value="5">Junho</option>
+                      <option value="6">Julho</option>
+                      <option value="7">Agosto</option>
+                      <option value="8">Setembro</option>
+                      <option value="9">Outubro</option>
+                      <option value="10">Novembro</option>
+                      <option value="11">Dezembro</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group col-6">
+                    <label for="gen-year-select">Ano</label>
+                    <select id="gen-year-select" required onchange="App.handleSegmentChange()">
+                      <option value="2026">2026</option>
+                      <option value="2027">2027</option>
+                      <option value="2028">2028</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Segmento da escala (fixo em Ministros da Eucaristia) -->
+                <input type="hidden" id="gen-segment-select" value="Ministro da Eucaristia">
+
+                <!-- Bloco Proeminente: Exceções de Dias Sem Missa -->
+                <div class="specific-exceptions-card">
+                  <div class="specific-exceptions-content">
+                    <div class="specific-exceptions-icon-wrap">
+                      <span class="exceptions-icon">🚫</span>
+                    </div>
+                    <div class="specific-exceptions-text">
+                      <h4 class="specific-exceptions-title">Dias Específicos Sem Missa Neste Mês</h4>
+                      <p class="specific-exceptions-subtitle">
+                        Se neste mês houver algum dia (ex: dia 07, ou uma quinta/sexta) sem celebração na matriz, clique no botão para excluí-lo:
+                      </p>
+                    </div>
+                  </div>
+                  <div class="specific-exceptions-action">
+                    <button type="button" class="btn btn-danger-prominent" id="btn-open-excluded-modal" onclick="event.preventDefault(); event.stopPropagation(); App.openExcludedDaysModal()">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                      <span id="excluded-days-btn-text">MARCAR DIAS SEM MISSA</span>
+                      <span class="badge badge-counter-white" id="excluded-days-badge" style="display:none;">0</span>
+                    </button>
+                  </div>
+                  <!-- Lista de tags dos dias marcados sem missa -->
+                  <div id="excluded-days-tags-container" class="excluded-tags-wrapper" style="display: none;"></div>
+                </div>
+
+                <div class="schedule-config-top-bar">
+                  <div class="config-top-info">
+                    <span class="config-top-badge">Configuração Semanal</span>
+                    <h4 class="config-top-title">Horários de Missa por Dia da Semana</h4>
+                    <p class="config-top-subtitle">Defina para cada dia se haverá celebração e selecione os horários (07h, 15h, 19h ou novos horários com 1 clique):</p>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-gold" onclick="App.resetScheduleConfigToDefault()" title="Restaura os horários litúrgicos padrão da paróquia">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    Restaurar Padrão Paroquial
+                  </button>
+                </div>
+
+                <!-- Container Dinâmico onde os 7 dias + Festas são gerados interativamente -->
+                <div id="gen-week-schedule-container" class="week-schedule-list-wrapper">
+                  <!-- Preenchido via App.renderScheduleWeekConfig() -->
+                </div>
+
+                <!-- Opções de Rotação -->
+                <div class="form-group mt-3" id="form-group-queue-mode">
+                  <label for="gen-queue-mode" style="font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Modo de Rodízio dos Ministros: <strong style="color:#ef4444;">*</strong></span>
+                    <small style="color:var(--text-muted); font-size:0.75rem; font-weight:normal;">Seleção Obrigatória</small>
+                  </label>
+                  <select id="gen-queue-mode" onchange="App.handleQueueModeChange(this)" style="font-weight: 600; padding: 10px 12px; font-size: 0.95rem; border-radius: var(--radius-sm);">
+                    <option value="" disabled selected>-- Selecione obrigatoriamente o modo de rodízio --</option>
+                    <option value="unified">Fila Cíclica Unificada (Roda continuamente por todas as celebrações)</option>
+                    <option value="split">Filas Independentes (Uma fila para Seg-Sex, uma para Finais de Semana e uma para Festas)</option>
+                  </select>
+                  <div id="queue-mode-error-msg" style="color: #ef4444; font-size: 0.82rem; font-weight: 700; margin-top: 6px; display: none;">
+                    ⚠️ Por favor, selecione o Modo de Rodízio dos Ministros para poder gerar a escala.
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-gold btn-block btn-lg mt-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                  Processar e Gerar Escala
+                </button>
+              </form>
+            </div>
+
+            <!-- Painel Dinâmico: Resumo e Prévia de Demandas do Mês -->
+            <div class="card live-preview-card" id="generation-preview-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Previsão e Cálculo de Demandas</h3>
+                  <p class="card-desc" id="prev-month-label">Mês Selecionado: Carregando...</p>
+                </div>
+                <span class="badge badge-gold" id="prev-active-members-badge">0 Ministros Ativos</span>
+              </div>
+
+              <div class="preview-metrics-row">
+                <div class="prev-metric-box">
+                  <span class="prev-metric-val" id="prev-total-shifts">0</span>
+                  <span class="prev-metric-lbl">Celebrações no Mês</span>
+                </div>
+                <div class="prev-metric-box">
+                  <span class="prev-metric-val" id="prev-total-slots">0</span>
+                  <span class="prev-metric-lbl">Total de Vagas / Escalas</span>
+                </div>
+                <div class="prev-metric-box highlight-prev">
+                  <span class="prev-metric-val" id="prev-avg-per-volunteer">0</span>
+                  <span class="prev-metric-lbl">Média por Ministro</span>
+                </div>
+              </div>
+
+              <div class="preview-breakdown-list">
+                <div class="prev-item">
+                  <span class="prev-item-tag tag-weekday">Segunda a Sexta (Noite)</span>
+                  <span class="prev-item-count" id="prev-count-weekday">0 missas (0 vagas)</span>
+                </div>
+                <div class="prev-item">
+                  <span class="prev-item-tag tag-tuesday">⭐ Terça-feira (Novena 15h)</span>
+                  <span class="prev-item-count" id="prev-count-tuesday">0 missas (0 vagas)</span>
+                </div>
+                <div class="prev-item">
+                  <span class="prev-item-tag tag-weekend">Sábado e Domingo</span>
+                  <span class="prev-item-count" id="prev-count-weekend">0 missas (0 vagas)</span>
+                </div>
+                <div class="prev-item">
+                  <span class="prev-item-tag tag-festa">Dias de Festa no Mês</span>
+                  <span class="prev-item-count" id="prev-count-festa">0 solenidades (0 vagas)</span>
+                </div>
+              </div>
+
+              <div class="preview-alert-box" id="prev-alert-box">
+                <span id="prev-alert-icon">ℹ️</span>
+                <span id="prev-alert-text">Calculando distribuição equilibrada para a equipe...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== ABA 4: VISUALIZAÇÃO DA ESCALA GERADA ==================== -->
+        <section id="tab-calendar" class="tab-pane fade-in">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="section-title" id="schedule-view-title">Escala do Mês</h2>
+              <p class="section-subtitle">Visualização e exportação da grade completa com filtros por modalidade</p>
+            </div>
+            <div class="title-bar-actions">
+              <button class="btn btn-whatsapp" onclick="App.exportToWhatsApp()" title="Copiar escala formatada para o WhatsApp">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Copiar p/ WhatsApp
+              </button>
+              <button class="btn btn-print-pdf" onclick="window.print()" title="Imprimir folha de escala ou gerar PDF">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Imprimir / PDF
+              </button>
+              <button class="btn btn-gold" onclick="App.openSwapModal()" title="Substituir ou permutar ministro">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                Trocar Plantão
+              </button>
+              <button class="btn btn-delete-schedule" id="btn-remove-schedule" onclick="App.confirmDeleteCurrentSchedule()" title="Excluir a escala gerada e estornar contagem dos ministros">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                Remover Escala
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtros e Barra de Exibição -->
+          <div class="schedule-controls-bar">
+            <div class="filter-pills-group">
+              <span class="filter-label">Filtrar por:</span>
+              <button class="filter-pill active" data-filter="all" onclick="App.setScheduleFilter('all')">Todos</button>
+              <button class="filter-pill filter-pill-weekday" data-filter="weekday" onclick="App.setScheduleFilter('weekday')">Segunda à Sexta</button>
+              <button class="filter-pill filter-pill-weekend" data-filter="weekend" onclick="App.setScheduleFilter('weekend')">Sábado e Domingo</button>
+              <button class="filter-pill filter-pill-festa" data-filter="festa" onclick="App.setScheduleFilter('festa')">Dias de Festa</button>
+            </div>
+
+            <!-- Buscador para Destacar Ministro na Escala -->
+            <div class="schedule-search-container">
+              <div class="search-input-wrap schedule-search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="schedule-person-search" placeholder="Localizar e destacar ministro..." oninput="App.highlightSchedulePerson(this.value)" autocomplete="off">
+                <button type="button" id="schedule-person-clear" class="btn-clear-search" onclick="App.clearScheduleHighlight()" title="Limpar busca" style="display: none;">&times;</button>
+              </div>
+              <span id="schedule-highlight-count" class="schedule-search-badge" style="display: none;"></span>
+            </div>
+
+            <div class="view-mode-toggle">
+              <button class="view-btn" id="view-mode-calendar" onclick="App.setScheduleView('calendar')" title="Visualização em Quadro de Mês (Calendário)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"></path></svg>
+                <span>Quadro do Mês</span>
+              </button>
+              <button class="view-btn active" id="view-mode-cards" onclick="App.setScheduleView('cards')" title="Visualização em Cartões">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Cartões</span>
+              </button>
+              <button class="view-btn" id="view-mode-table" onclick="App.setScheduleView('table')" title="Visualização em Lista/Tabela">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                <span>Lista</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Container da Escala -->
+          <div id="schedule-display-container" class="schedule-display-area">
+            <!-- Renderizado dinamicamente -->
+          </div>
+        </section>
+
+        <!-- ==================== ABA 5: DIAS DE FESTA ==================== -->
+        <section id="tab-festas" class="tab-pane fade-in">
+          <div class="section-title-bar">
+            <div>
+              <h2 class="section-title">Dias de Festa & Solenidades</h2>
+              <p class="section-subtitle">Cadastre as celebrações especiais que têm regras diferenciadas de escala</p>
+            </div>
+            <button class="btn btn-gold" onclick="App.loadDefaultHolidays()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Carregar Solenidades Litúrgicas Padrão
+            </button>
+          </div>
+
+          <div class="festas-layout-grid">
+            <div class="card add-festa-card">
+              <div class="card-header">
+                <h3 class="card-title">Nova Festa / Solenidade</h3>
+                <span class="badge badge-gold">Especial</span>
+              </div>
+              <form id="add-festa-form" onsubmit="App.handleAddFesta(event)">
+                <div class="form-group">
+                  <label for="festa-name-input">Título da Festa ou Solenidade</label>
+                  <input type="text" id="festa-name-input" placeholder="Ex: Padroeira Nossa Senhora Aparecida..." required>
+                </div>
+                <div class="form-group">
+                  <label for="festa-date-input">Data</label>
+                  <input type="date" id="festa-date-input" required>
+                </div>
+                <div class="form-group">
+                  <label for="festa-notes-input">Observações / Horário Especial (Opcional)</label>
+                  <input type="text" id="festa-notes-input" placeholder="Ex: Missa Solene com Procissão às 19:00">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Cadastrar Festa
+                </button>
+              </form>
+            </div>
+
+            <div class="card festas-list-card">
+              <div class="card-header">
+                <h3 class="card-title">Festas Cadastradas</h3>
+                <span class="badge badge-primary" id="festas-list-badge">0 celebrações</span>
+              </div>
+              <div class="festas-list-container" id="festas-list-container">
+                <!-- Renderizado via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="app-footer">
+      <div class="footer-container">
+        <div class="footer-brand">
+          <img src="logo.png" alt="Logo" class="footer-logo">
+          <span>Sistema de Escalas Paroquiais & Comunitárias • Rotação Equilibrada</span>
+        </div>
+        <div class="footer-meta">
+          <span>Armazenamento local no navegador</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==================== MODAL: TROCAR PLANTÃO / SUBSTITUIÇÃO ==================== -->
+  <div id="modal-swap" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Substituição / Troca Manual de Plantão</h3>
+        <button class="modal-close-btn" onclick="App.closeSwapModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="swap-info-callout">
+          <span style="font-size: 1.3rem; line-height: 1;">💡</span>
+          <div>
+            <strong>Regra de Contagem & Rotação:</strong>
+            A contagem de quem é substituído fica <strong>congelada</strong> (não soma o dia ausente). Já o <strong>substituto</strong> assume o plantão (+1 no contador) e recebe destaque visual exclusivo com identificação na escala.
+          </div>
+        </div>
+
+        <p class="modal-desc" id="swap-modal-desc">Selecione o plantão e o ministro que assumirá a vaga:</p>
+
+        <!-- Banner fixo do plantão quando acionado diretamente de um card/dia -->
+        <div id="swap-fixed-shift-box" class="swap-fixed-shift-box" style="display: none;">
+          <div>
+            <div class="swap-fixed-shift-label">Plantão Selecionado</div>
+            <div class="swap-fixed-shift-title" id="swap-fixed-shift-title">Dia 00/00 - Missa</div>
+          </div>
+          <span class="swap-fixed-shift-badge" id="swap-fixed-shift-badge">⏰ 00:00</span>
+        </div>
+
+        <div class="form-group" id="swap-shift-group">
+          <label for="swap-shift-select">Selecione o Plantão:</label>
+          <select id="swap-shift-select" onchange="App.handleSwapShiftChange()">
+            <!-- Preenchido dinamicamente -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="swap-old-person-select">Ministro escalado a ser substituído:</label>
+          <select id="swap-old-person-select">
+            <!-- Preenchido dinamicamente -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="swap-person-btn-trigger">Por quem? (Ministro substituto):</label>
+          <select id="swap-new-person-select" style="display: none;">
+            <!-- Preenchido dinamicamente para manter compatibilidade -->
+          </select>
+
+          <div class="custom-dropdown-container" id="swap-person-dropdown-container">
+            <button type="button" class="custom-dropdown-btn" id="swap-person-btn-trigger" onclick="App.toggleSwapPersonDropdown()" aria-haspopup="listbox" aria-expanded="false">
+              <span id="swap-person-selected-display">
+                <span style="color: var(--text-muted);">Selecione o ministro substituto...</span>
+              </span>
+              <span class="custom-dropdown-arrow">▾</span>
+            </button>
+
+            <div class="custom-dropdown-menu" id="swap-person-dropdown-menu">
+              <div class="custom-dropdown-search-box">
+                <input type="text" id="swap-person-search-input" placeholder="🔍 Filtrar ministro por nome..." oninput="App.filterSwapPersonOptions(this.value)">
+              </div>
+              <div class="custom-dropdown-items-list" id="swap-person-items-list" role="listbox">
+                <!-- Preenchido dinamicamente com nome em negrito e Disponível em verde vivo -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="App.closeSwapModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="App.confirmSwap()">Confirmar Substituição</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADICIONAR MINISTRO DE ÚLTIMA HORA ==================== -->
+  <div id="modal-add-minister" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.4rem;">⚡</span>
+          <div>
+            <h3 class="modal-title">Adicionar Ministro de Última Hora</h3>
+            <p class="modal-desc" id="add-minister-shift-desc" style="margin:0; font-size:0.8rem; color:var(--text-muted);"></p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="App.closeAddMinisterModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="swap-info-callout" style="border-left-color: #059669; background: rgba(16, 185, 129, 0.08);">
+          <span style="font-size: 1.3rem; line-height: 1;">💡</span>
+          <div>
+            <strong>Ordem da Sequência Circular:</strong>
+            Os ministros abaixo estão organizados seguindo a ordem natural da rotação (o <strong>1º</strong> é o próximo da fila). Você pode seguir a ordem da sequência ou selecionar qualquer outro ministro disponível. O ministro escalado receberá <strong>destaque verde esmeralda</strong> no cartão da celebração.
+          </div>
+        </div>
+
+        <input type="hidden" id="add-minister-shift-id" value="">
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <input type="text" id="add-minister-search" class="search-input" placeholder="🔍 Filtrar ministro por nome ou função..." oninput="App.filterAddMinisterList()" style="width:100%;">
+        </div>
+
+        <div id="add-minister-list" class="extra-ministers-list">
+          <!-- Preenchido dinamicamente via App.renderAddMinisterList() -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeAddMinisterModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: REMOVER MINISTRO DA CELEBRAÇÃO ==================== -->
+  <div id="modal-remove-minister" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header" style="border-bottom: 2px solid #fecdd3;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.4rem;">🗑️</span>
+          <div>
+            <h3 class="modal-title" style="color:#b91c1c;">Remover Ministro da Celebração</h3>
+            <p class="modal-desc" id="remove-minister-shift-desc" style="margin:0; font-size:0.8rem; color:var(--text-muted);"></p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="App.closeRemoveMinisterModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="remove-minister-shift-id" value="">
+        <div class="swap-info-callout" style="border-left-color: #ef4444; background: rgba(239, 68, 68, 0.08); margin-bottom: 1rem;">
+          <span style="font-size: 1.3rem; line-height: 1;">ℹ️</span>
+          <div style="font-size: 0.84rem; line-height: 1.4; color: var(--text-main);">
+            Selecione o ministro que deseja retirar desta celebração. A contagem de plantões do ministro será decrementada em 1 automaticamente.
+          </div>
+        </div>
+
+        <div id="remove-minister-list" class="remove-ministers-list" style="display:flex; flex-direction:column; gap:8px;">
+          <!-- Preenchido dinamicamente via App.renderRemoveMinisterList() -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeRemoveMinisterModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: EDITAR INSCRITO ==================== -->
+  <div id="modal-edit-member" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Editar Participante</h3>
+        <button class="modal-close-btn" onclick="App.closeEditMemberModal()">&times;</button>
+      </div>
+      <form id="edit-member-form" onsubmit="App.handleSaveEditMember(event)">
+        <div class="modal-body">
+          <input type="hidden" id="edit-member-id">
+          
+          <div class="form-group">
+            <label for="edit-member-name">Nome Completo ou Apelido</label>
+            <input type="text" id="edit-member-name" required autocomplete="off">
+          </div>
+
+          <div class="form-group" style="display: none;">
+            <label>Função / Ministério (Selecione as funções que exerce)</label>
+            <div class="roles-checklist-container">
+              <label class="role-check-item">
+                <input type="checkbox" name="role_edit" value="Ministro da Eucaristia" checked onchange="App.handleRoleChange('edit')">
+                <span class="role-check-custom"></span>
+                <span>Ministro da Eucaristia</span>
+              </label>
+              <label class="role-check-item">
+                <input type="checkbox" name="role_edit" value="Acolhida" onchange="App.handleRoleChange('edit')">
+                <span class="role-check-custom"></span>
+                <span>Acolhida</span>
+              </label>
+              <label class="role-check-item">
+                <input type="checkbox" name="role_edit" value="Comentarista" onchange="App.handleRoleChange('edit')">
+                <span class="role-check-custom"></span>
+                <span>Comentarista</span>
+              </label>
+              <label class="role-check-item">
+                <input type="checkbox" name="role_edit" value="Acólito" onchange="App.handleRoleChange('edit')">
+                <span class="role-check-custom"></span>
+                <span>Acólito</span>
+              </label>
+              <label class="role-check-item">
+                <input type="checkbox" name="role_edit" value="Coroinha" onchange="App.handleRoleChange('edit')">
+                <span class="role-check-custom"></span>
+                <span>Coroinha</span>
+              </label>
+              <label class="role-check-item">
+                <input type="checkbox" name="role_edit" value="Irmão do Santíssimo" onchange="App.handleRoleChange('edit')">
+                <span class="role-check-custom"></span>
+                <span>Irmão do Santíssimo</span>
+              </label>
+              <label class="role-check-item">
+                <input type="checkbox" id="edit-role-outro-check" name="role_edit" value="Outro" onchange="App.handleRoleChange('edit')">
+                <span class="role-check-custom"></span>
+                <span>Outro</span>
+              </label>
+            </div>
+            <div id="edit-role-outro-wrap" class="role-outro-input-wrap" style="display: none;">
+              <input type="text" id="edit-role-outro-input" placeholder="Qual função? (Ex: Cerimoniário, Músico, etc.)">
+            </div>
+          </div>
+
+          <div class="form-group text-center-group">
+            <label class="text-center-label">Disponibilidade (Selecione as modalidades disponíveis)</label>
+            <div class="checkbox-options-centered">
+              <label class="checkbox-pill cat-weekday-pill">
+                <input type="checkbox" id="edit-pref-weekday" value="weekday">
+                <span class="pill-check-indicator"></span>
+                <span>Segunda à Sexta</span>
+              </label>
+
+              <label class="checkbox-pill cat-weekend-pill">
+                <input type="checkbox" id="edit-pref-weekend" value="weekend">
+                <span class="pill-check-indicator"></span>
+                <span>Sábado e Domingo</span>
+              </label>
+
+              <label class="checkbox-pill cat-festa-pill">
+                <input type="checkbox" id="edit-pref-festa" value="festa">
+                <span class="pill-check-indicator"></span>
+                <span>Dias de Festa</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group text-center-group">
+            <label class="text-center-label">Horários de Disponibilidade (Regra para Escalar)</label>
+            <div class="checkbox-options-centered time-options-centered">
+              <label class="checkbox-pill time-pill time-pill-07" title="Disponível para celebrações às 07:00">
+                <input type="checkbox" id="edit-time-0700" value="07:00" onchange="App.handleTimeCheckChange('edit')">
+                <span class="pill-check-indicator"></span>
+                <span>🌅 07:00</span>
+              </label>
+
+              <label class="checkbox-pill time-pill time-pill-15" title="Disponível para celebrações/novena às 15:00">
+                <input type="checkbox" id="edit-time-1500" value="15:00" onchange="App.handleTimeCheckChange('edit')">
+                <span class="pill-check-indicator"></span>
+                <span>☀️ 15:00</span>
+              </label>
+
+              <label class="checkbox-pill time-pill time-pill-19" title="Disponível para celebrações às 19:00">
+                <input type="checkbox" id="edit-time-1900" value="19:00" onchange="App.handleTimeCheckChange('edit')">
+                <span class="pill-check-indicator"></span>
+                <span>🌙 19:00</span>
+              </label>
+
+              <label class="checkbox-pill time-pill time-pill-outro" title="Disponível para outros horários (ex: 19:30, 08:00)">
+                <input type="checkbox" id="edit-time-outro-check" value="outro" onchange="App.handleTimeCheckChange('edit')">
+                <span class="pill-check-indicator"></span>
+                <span>⏰ OUTRO</span>
+              </label>
+            </div>
+            <div id="edit-time-outro-wrap" class="role-outro-input-wrap" style="display: none; margin-top: 6px;">
+              <input type="text" id="edit-time-outro-input" maxlength="5" placeholder="HH:MM (Ex: 20:00)" oninput="App.formatTimeInput(this)">
+            </div>
+          </div>
+
+          <!-- Comunidade onde serve -->
+          <div class="form-group">
+            <label for="edit-member-community">Comunidade onde serve</label>
+            <select id="edit-member-community" onchange="App.handleCommunityChange('edit')" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border-strong); background-color: var(--bg-card); color: var(--text-main); font-weight: 600;">
+              <option value="Matriz">Matriz</option>
+              <option value="Santa Terezinha">Santa Terezinha</option>
+              <option value="São Cristóvão">São Cristóvão</option>
+              <option value="São Miguel">São Miguel</option>
+              <option value="São José Operário">São José Operário</option>
+              <option value="OUTRO">OUTRO (Especificar)</option>
+            </select>
+            <div id="edit-community-outro-wrap" style="display: none; margin-top: 6px;">
+              <input type="text" id="edit-community-outro-input" placeholder="Qual outra comunidade?">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="edit-member-status">Status na Rotação</label>
+              <select id="edit-member-status">
+                <option value="true">🟢 Ativo</option>
+                <option value="false">⚪ Em pausa</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label for="edit-member-count">Vezes Escalado(a)</label>
+              <input type="number" id="edit-member-count" min="0" value="0">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="App.closeEditMemberModal()">Cancelar</button>
+          <button type="submit" class="btn btn-gold">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CONFIRMAÇÃO COM IDENTIDADE VISUAL ==================== -->
+  <div id="modal-confirm" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-confirm">
+      <div class="confirm-dialog-header">
+        <div class="confirm-icon-wrapper" id="confirm-icon-wrapper">
+          <!-- Ícone dinâmico SVG -->
+        </div>
+        <button class="modal-close-btn" onclick="App.closeConfirmModal(false)">&times;</button>
+      </div>
+      <div class="confirm-dialog-body">
+        <h3 class="confirm-dialog-title" id="confirm-modal-title">Confirmar Ação</h3>
+        <p class="confirm-dialog-message" id="confirm-modal-message">Tem certeza?</p>
+      </div>
+      <div class="confirm-dialog-footer">
+        <button type="button" class="btn btn-outline" id="confirm-btn-cancel" onclick="App.closeConfirmModal(false)">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirm-btn-action" onclick="App.closeConfirmModal(true)">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADICIONAR NOVO HORÁRIO DE CELEBRAÇÃO ==================== -->
+  <div id="modal-add-time-slot" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:1.4rem;">⏰</span>
+          <div>
+            <h3 class="modal-title" id="add-time-modal-title">Novo Horário de Missa</h3>
+            <p class="modal-desc" id="add-time-modal-subtitle" style="margin:0; font-size:0.8rem; color:var(--text-muted);">Defina o horário e vagas de ministros para a escala</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="App.closeAddTimeModal()">&times;</button>
+      </div>
+      <form id="add-time-slot-form" onsubmit="App.confirmAddTimeModal(event)">
+        <input type="hidden" id="add-time-day-key" value="">
+        <div class="modal-body" style="padding: 1.25rem;">
+          <div class="form-group" style="text-align: center; margin-bottom: 1.25rem;">
+            <label for="add-time-input" style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 0.92rem; color: var(--primary-900);">Horário da Celebração (HH:MM)</label>
+            <div style="max-width: 200px; margin: 0 auto; position: relative;">
+              <input type="text" id="add-time-input" placeholder="00:00" maxlength="5" autocomplete="off" style="font-size: 1.8rem; font-weight: 900; letter-spacing: 3px; text-align: center; padding: 8px 12px; border-radius: var(--radius-md); border: 2px solid var(--primary-600); background: #f8fafc; color: var(--primary-900); width: 100%;" oninput="App.maskTimeInput(this)">
+            </div>
+            <small class="form-hint" style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-top: 6px;">Digite apenas os dígitos. Os dois pontos (:) são inseridos automaticamente.</small>
+            <div id="add-time-error-msg" style="color: #ef4444; font-size: 0.82rem; font-weight: 700; margin-top: 6px; display: none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="add-time-persons-input" style="font-weight: 700; margin-bottom: 6px; display: block; font-size: 0.88rem;">Vagas de Ministros para este Horário</label>
+            <select id="add-time-persons-input" style="width: 100%; font-size: 0.95rem; font-weight: 700; padding: 9px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border-strong); background-color: var(--bg-card); color: var(--text-main);">
+              <option value="2" selected>2 Ministros (Mínimo Segunda a Sábado)</option>
+              <option value="3">3 Ministros</option>
+              <option value="4">4 Ministros (Mínimo Domingo e Festas)</option>
+              <option value="5">5 Ministros</option>
+              <option value="6">6 Ministros</option>
+              <option value="8">8 Ministros</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; padding: 1rem 1.25rem; border-top: 1px solid var(--border-subtle);">
+          <button type="button" class="btn btn-outline" onclick="App.closeAddTimeModal()">Cancelar</button>
+          <button type="submit" class="btn btn-gold" style="font-weight: 700;">Adicionar Horário</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: DIAS SEM MISSA (EXCEÇÕES ESPECÍFICAS) ==================== -->
+  <div id="modal-excluded-days" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-calendar" style="max-width: 500px;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #0f2042 0%, #162f5f 100%); color: #fff;">
+        <div>
+          <h3 class="modal-title" style="display:flex; align-items:center; gap:8px; color:#fff;">
+            <span>🚫 Dias Sem Missa • <span id="excluded-modal-month-name">Mês</span></span>
+          </h3>
+          <p class="modal-desc" style="color: rgba(255,255,255,0.85); margin: 4px 0 0; font-size: 0.78rem;">
+            Clique nos dias em que <strong>NÃO</strong> haverá celebração para excluí-los da escala:
+          </p>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="App.closeExcludedDaysModal()" style="color:#fff;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 14px;">
+        <div id="excluded-days-calendar-grid" class="excluded-calendar-grid">
+          <!-- Gerado dinamicamente via JS -->
+        </div>
+        <div style="margin-top: 12px; font-size: 0.76rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+          <span><strong style="color: #ef4444;">Vermelho (🚫):</strong> Dia excluído da escala</span>
+          <button type="button" class="btn btn-sm btn-outline" onclick="App.clearAllExcludedDays()" style="font-size: 0.74rem; padding: 3px 8px;">Limpar Todos</button>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px;">
+        <button type="button" class="btn btn-outline" onclick="App.closeExcludedDaysModal()">Cancelar</button>
+        <button type="button" class="btn btn-gold" onclick="App.saveExcludedDaysModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Salvar e Aplicar Exceções
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Templates para Impressão com Marca d'água -->
+  <div id="print-container" class="print-only">
+    <div id="print-header">
+      <div class="print-brand-row">
+        <img src="pnsa.png" alt="Brasão" class="print-logo">
+        <div class="print-title-block">
+          <h1 id="print-sheet-title">ESCALA DE MINISTROS EXTRAORDINÁRIOS DA SAGRADA COMUNHÃO - MESC</h1>
+          <h3 id="print-sheet-period">Mês / Ano</h3>
+        </div>
+        <img src="logo.png" alt="Logo" class="print-logo">
+      </div>
+    </div>
+    <div id="print-calendar-area"></div>
+    <div id="print-footer" class="print-calendar-footer">
+      <!-- Lembretes Oficiais aos Ministros -->
+      <div class="print-reminders-box">
+        <div class="print-reminders-layout">
+          <div class="print-reminders-main">
+            <div class="print-reminders-header">
+              <span class="reminders-badge" id="print-reminders-badge">LEMBRETES IMPORTANTES AOS MINISTROS (MESC)</span>
+            </div>
+            <ul class="print-reminders-list" id="print-reminders-list">
+              <li>CHEGAR UMA HORA ANTES DO HORÁRIO DA CELEBRAÇÃO</li>
+              <li>CADA MINISTRO DEVERÁ LEVAR CONSIGO UM SANGUÍNEO PARA USÁ-LO NO MOMENTO DA DISTRIBUIÇÃO DA SANTA COMUNHÃO</li>
+              <li>QUALQUER PROBLEMA PARA O CUMPRIMENTO DA ESCALA FAVOR AVISAR COM ANTECEDÊNCIA</li>
+            </ul>
+          </div>
+          <div class="print-invocation-col">
+            <img src="NSA.png" alt="Nossa Senhora Aparecida" class="print-nsa-img">
+            <span class="print-invocation-phrase">Nossa Senhora Aparecida, rogai por nós!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="print-legend-row">
+        <div class="legend-items">
+          <span><strong>Legenda:</strong></span>
+          <span>⭐ Solenidade / Celebração Festiva</span>
+          <span>⏰ Horário da Celebração</span>
+        </div>
+        <div class="print-date-stamp" id="print-date-stamp"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs (Nuvem Google) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js?v=20261024_4"></script>
+</body>
+</html>

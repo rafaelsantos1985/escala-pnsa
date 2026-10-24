@@ -1,0 +1,18 @@
+{
+  "name": "Sistema de Escalas - Paróquia Nossa Senhora Aparecida",
+  "short_name": "Escala PNSA",
+  "description": "Gestão Inteligente de Escalas Litúrgicas da Paróquia Nossa Senhora Aparecida",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "pnsa.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
