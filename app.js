@@ -552,7 +552,10 @@ const App = (() => {
 
     if (monthSelect) {
       monthSelect.value = now.getMonth().toString();
-      monthSelect.addEventListener('change', updateGenerationPreview);
+      monthSelect.addEventListener('change', () => {
+        updateMonthSelectOptions();
+        updateGenerationPreview();
+      });
     }
     if (yearSelect) {
       const currentYear = now.getFullYear();
@@ -561,8 +564,12 @@ const App = (() => {
         <option value="${currentYear + 1}">${currentYear + 1}</option>
       `;
       yearSelect.value = currentYear.toString();
-      yearSelect.addEventListener('change', updateGenerationPreview);
+      yearSelect.addEventListener('change', () => {
+        handleYearChange();
+      });
     }
+
+    updateMonthSelectOptions();
 
     // Vincula atualização da prévia a todos os campos do gerador
     const genTab = document.getElementById('tab-generator');
@@ -807,9 +814,51 @@ const App = (() => {
     }
   }
 
+  /**
+   * Atualiza as opções do select de meses para desabilitar meses anteriores ao mês corrente
+   */
+  function updateMonthSelectOptions() {
+    const monthSelect = document.getElementById('gen-month-select');
+    const yearSelect = document.getElementById('gen-year-select');
+    if (!monthSelect || !yearSelect) return;
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const selectedYear = parseInt(yearSelect.value, 10);
+
+    const monthNames = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+
+    const currentVal = parseInt(monthSelect.value, 10);
+
+    Array.from(monthSelect.options).forEach((opt, idx) => {
+      const isPastMonth = (selectedYear < currentYear) || (selectedYear === currentYear && idx < currentMonth);
+      opt.disabled = isPastMonth;
+      if (isPastMonth) {
+        opt.textContent = `${monthNames[idx]} (Passado - Indisponível)`;
+      } else {
+        opt.textContent = monthNames[idx];
+      }
+    });
+
+    // Se o mês atualmente selecionado for anterior ao corrente, redefine para o mês atual
+    if (selectedYear < currentYear || (selectedYear === currentYear && currentVal < currentMonth)) {
+      monthSelect.value = currentMonth.toString();
+    }
+  }
+
+  function handleYearChange() {
+    updateMonthSelectOptions();
+    handleSegmentChange();
+  }
+
   function handleSegmentChange() {
     state.excludedDays = [];
     renderExcludedDaysSummary();
+    updateMonthSelectOptions();
     handlePeriodTypeChange(false);
     updateGenerationPreview();
   }
@@ -2529,6 +2578,20 @@ const App = (() => {
 
     const range = getSelectedScheduleRange();
     const { month, year, daysInMonth, isPartial, startDay, endDay } = range;
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      showToast('Não é permitido gerar escalas para meses anteriores ao mês corrente.', true);
+      const monthSelect = document.getElementById('gen-month-select');
+      if (monthSelect) {
+        monthSelect.value = currentMonth.toString();
+        updateMonthSelectOptions();
+      }
+      return;
+    }
 
     if (isPartial) {
       if (startDay > endDay) {
@@ -4977,6 +5040,8 @@ const App = (() => {
     exportToWhatsApp,
     handleTimeInput,
     handleSegmentChange,
+    handleYearChange,
+    updateMonthSelectOptions,
     handlePeriodTypeChange,
     handlePartialDaysInput,
     getSelectedScheduleRange,
