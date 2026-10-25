@@ -552,10 +552,7 @@ const App = (() => {
 
     if (monthSelect) {
       monthSelect.value = now.getMonth().toString();
-      monthSelect.addEventListener('change', () => {
-        updateMonthSelectOptions();
-        updateGenerationPreview();
-      });
+      monthSelect.addEventListener('change', updateGenerationPreview);
     }
     if (yearSelect) {
       const currentYear = now.getFullYear();
@@ -815,7 +812,8 @@ const App = (() => {
   }
 
   /**
-   * Atualiza as opções do select de meses para desabilitar meses anteriores ao mês corrente
+   * Atualiza as opções do select de meses exibindo apenas os meses disponíveis para escala
+   * (meses anteriores ao mês corrente não são exibidos para manter o visual limpo)
    */
   function updateMonthSelectOptions() {
     const monthSelect = document.getElementById('gen-month-select');
@@ -832,21 +830,22 @@ const App = (() => {
       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
 
-    const currentVal = parseInt(monthSelect.value, 10);
+    const prevVal = parseInt(monthSelect.value, 10);
+    // Para o ano corrente, exibe apenas a partir do mês atual. Para anos futuros, exibe todos os 12 meses.
+    const startMonthIdx = (selectedYear === currentYear) ? currentMonth : ((selectedYear < currentYear) ? 12 : 0);
 
-    Array.from(monthSelect.options).forEach((opt, idx) => {
-      const isPastMonth = (selectedYear < currentYear) || (selectedYear === currentYear && idx < currentMonth);
-      opt.disabled = isPastMonth;
-      if (isPastMonth) {
-        opt.textContent = `${monthNames[idx]} (Passado - Indisponível)`;
-      } else {
-        opt.textContent = monthNames[idx];
-      }
-    });
+    let htmlOptions = '';
+    for (let idx = startMonthIdx; idx < 12; idx++) {
+      htmlOptions += `<option value="${idx}">${monthNames[idx]}</option>`;
+    }
 
-    // Se o mês atualmente selecionado for anterior ao corrente, redefine para o mês atual
-    if (selectedYear < currentYear || (selectedYear === currentYear && currentVal < currentMonth)) {
-      monthSelect.value = currentMonth.toString();
+    monthSelect.innerHTML = htmlOptions;
+
+    // Preserva o mês selecionado se ele ainda for válido, senão seleciona o primeiro mês disponível
+    if (!isNaN(prevVal) && prevVal >= startMonthIdx && prevVal < 12) {
+      monthSelect.value = prevVal.toString();
+    } else if (startMonthIdx < 12) {
+      monthSelect.value = startMonthIdx.toString();
     }
   }
 
