@@ -576,6 +576,9 @@ const App = (() => {
     if (festaDateInput) {
       festaDateInput.value = now.toISOString().split('T')[0];
     }
+
+    // Inicializa limites e estado do seletor de período parcial
+    handlePeriodTypeChange(false);
   }
 
   /**
@@ -807,6 +810,7 @@ const App = (() => {
   function handleSegmentChange() {
     state.excludedDays = [];
     renderExcludedDaysSummary();
+    handlePeriodTypeChange(false);
     updateGenerationPreview();
   }
 
@@ -2109,6 +2113,199 @@ const App = (() => {
     showToast('Horários canônicos padrão da paróquia restaurados com sucesso!');
   }
 
+  /* ==========================================================================
+     GERENCIADOR DE PERÍODO DA ESCALA (MÊS COMPLETO OU PARCIAL)
+     ========================================================================== */
+
+  function getSelectedScheduleRange() {
+    const monthSelect = document.getElementById('gen-month-select');
+    const yearSelect = document.getElementById('gen-year-select');
+    const periodTypeSelect = document.getElementById('gen-period-type');
+    const startDayInput = document.getElementById('gen-start-day');
+    const endDayInput = document.getElementById('gen-end-day');
+
+    const month = monthSelect ? parseInt(monthSelect.value, 10) : new Date().getMonth();
+    const year = yearSelect ? parseInt(yearSelect.value, 10) : new Date().getFullYear();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const periodType = periodTypeSelect ? periodTypeSelect.value : 'full';
+
+    let isPartial = false;
+    let startDay = 1;
+    let endDay = daysInMonth;
+
+    if (periodType !== 'full') {
+      isPartial = true;
+      startDay = startDayInput ? parseInt(startDayInput.value, 10) : 1;
+      endDay = endDayInput ? parseInt(endDayInput.value, 10) : daysInMonth;
+
+      if (isNaN(startDay) || startDay < 1) startDay = 1;
+      if (isNaN(endDay) || endDay > daysInMonth) endDay = daysInMonth;
+      if (startDay > daysInMonth) startDay = daysInMonth;
+    }
+
+    return { month, year, daysInMonth, isPartial, startDay, endDay, periodType };
+  }
+
+  function handlePeriodTypeChange(triggerPreview = true) {
+    const periodTypeSelect = document.getElementById('gen-period-type');
+    const customDaysGroup = document.getElementById('gen-custom-days-group');
+    const startDayInput = document.getElementById('gen-start-day');
+    const endDayInput = document.getElementById('gen-end-day');
+    const badge = document.getElementById('gen-period-badge');
+    const helperSpan = document.getElementById('gen-period-helper-span');
+    const hint = document.getElementById('gen-days-count-hint');
+
+    const monthSelect = document.getElementById('gen-month-select');
+    const yearSelect = document.getElementById('gen-year-select');
+    const month = monthSelect ? parseInt(monthSelect.value, 10) : new Date().getMonth();
+    const year = yearSelect ? parseInt(yearSelect.value, 10) : new Date().getFullYear();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    if (startDayInput) {
+      startDayInput.max = daysInMonth.toString();
+    }
+    if (endDayInput) {
+      endDayInput.max = daysInMonth.toString();
+    }
+
+    const type = periodTypeSelect ? periodTypeSelect.value : 'full';
+
+    if (type === 'full') {
+      if (customDaysGroup) customDaysGroup.style.display = 'none';
+      if (badge) {
+        badge.className = 'badge badge-secondary period-badge-chip';
+        badge.textContent = 'Mês Completo';
+      }
+      if (helperSpan) {
+        helperSpan.textContent = `A escala será gerada para todos os dias do mês (${daysInMonth} dias).`;
+        helperSpan.style.color = '';
+      }
+      if (startDayInput) startDayInput.value = '1';
+      if (endDayInput) endDayInput.value = daysInMonth.toString();
+    } else if (type === 'quinzena1') {
+      if (customDaysGroup) customDaysGroup.style.display = 'block';
+      const endQ1 = Math.min(15, daysInMonth);
+      if (startDayInput) startDayInput.value = '1';
+      if (endDayInput) endDayInput.value = endQ1.toString();
+      if (badge) {
+        badge.className = 'badge badge-primary period-badge-chip';
+        badge.textContent = '1ª Quinzena';
+      }
+      if (hint) {
+        hint.textContent = `${endQ1} dias`;
+      }
+      if (helperSpan) {
+        helperSpan.textContent = `Escala parcial do dia 01 ao dia ${String(endQ1).padStart(2, '0')} (${endQ1} dias de celebrações).`;
+        helperSpan.style.color = '';
+      }
+    } else if (type === 'quinzena2') {
+      if (customDaysGroup) customDaysGroup.style.display = 'block';
+      const startQ2 = Math.min(16, daysInMonth);
+      if (startDayInput) startDayInput.value = startQ2.toString();
+      if (endDayInput) endDayInput.value = daysInMonth.toString();
+      const countQ2 = (daysInMonth - startQ2 + 1);
+      if (badge) {
+        badge.className = 'badge badge-primary period-badge-chip';
+        badge.textContent = '2ª Quinzena';
+      }
+      if (hint) {
+        hint.textContent = `${countQ2} dias`;
+      }
+      if (helperSpan) {
+        helperSpan.textContent = `Escala parcial do dia ${startQ2} ao dia ${daysInMonth} (${countQ2} dias de celebrações).`;
+        helperSpan.style.color = '';
+      }
+    } else { // 'custom'
+      if (customDaysGroup) customDaysGroup.style.display = 'block';
+      let s = startDayInput ? parseInt(startDayInput.value, 10) : 1;
+      let e = endDayInput ? parseInt(endDayInput.value, 10) : 15;
+      if (isNaN(s) || s < 1) s = 1;
+      if (isNaN(e) || e > daysInMonth) e = daysInMonth;
+      if (badge) {
+        badge.className = 'badge badge-gold period-badge-chip';
+        badge.textContent = 'Personalizado';
+      }
+      const countCustom = (e >= s ? (e - s + 1) : 0);
+      if (hint) {
+        hint.textContent = `${countCustom} dias`;
+      }
+      if (helperSpan) {
+        if (s > e) {
+          helperSpan.textContent = `Atenção: O dia inicial (${s}) deve ser menor ou igual ao dia final (${e}).`;
+          helperSpan.style.color = 'var(--danger-500, #ef4444)';
+        } else {
+          helperSpan.textContent = `Escala parcial personalizada do dia ${String(s).padStart(2, '0')} ao dia ${String(e).padStart(2, '0')} (${countCustom} dias).`;
+          helperSpan.style.color = '';
+        }
+      }
+    }
+
+    if (triggerPreview) {
+      updateGenerationPreview();
+    }
+  }
+
+  function handlePartialDaysInput() {
+    const periodTypeSelect = document.getElementById('gen-period-type');
+    const startDayInput = document.getElementById('gen-start-day');
+    const endDayInput = document.getElementById('gen-end-day');
+    const badge = document.getElementById('gen-period-badge');
+    const helperSpan = document.getElementById('gen-period-helper-span');
+    const hint = document.getElementById('gen-days-count-hint');
+
+    const monthSelect = document.getElementById('gen-month-select');
+    const yearSelect = document.getElementById('gen-year-select');
+    const month = monthSelect ? parseInt(monthSelect.value, 10) : new Date().getMonth();
+    const year = yearSelect ? parseInt(yearSelect.value, 10) : new Date().getFullYear();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let s = startDayInput ? parseInt(startDayInput.value, 10) : 1;
+    let e = endDayInput ? parseInt(endDayInput.value, 10) : daysInMonth;
+
+    if (isNaN(s)) s = 1;
+    if (isNaN(e)) e = daysInMonth;
+
+    if (s === 1 && e === Math.min(15, daysInMonth)) {
+      if (periodTypeSelect) periodTypeSelect.value = 'quinzena1';
+      if (badge) {
+        badge.className = 'badge badge-primary period-badge-chip';
+        badge.textContent = '1ª Quinzena';
+      }
+    } else if (s === Math.min(16, daysInMonth) && e === daysInMonth) {
+      if (periodTypeSelect) periodTypeSelect.value = 'quinzena2';
+      if (badge) {
+        badge.className = 'badge badge-primary period-badge-chip';
+        badge.textContent = '2ª Quinzena';
+      }
+    } else if (s === 1 && e === daysInMonth) {
+      if (periodTypeSelect) periodTypeSelect.value = 'full';
+      if (badge) {
+        badge.className = 'badge badge-secondary period-badge-chip';
+        badge.textContent = 'Mês Completo';
+      }
+    } else {
+      if (periodTypeSelect) periodTypeSelect.value = 'custom';
+      if (badge) {
+        badge.className = 'badge badge-gold period-badge-chip';
+        badge.textContent = 'Personalizado';
+      }
+    }
+
+    const countDays = e >= s ? (e - s + 1) : 0;
+    if (hint) hint.textContent = `${countDays} dias`;
+    if (helperSpan) {
+      if (s > e) {
+        helperSpan.textContent = `Atenção: O dia inicial (${s}) deve ser menor ou igual ao dia final (${e}).`;
+        helperSpan.style.color = 'var(--danger-500, #ef4444)';
+      } else {
+        helperSpan.textContent = `Escala parcial do dia ${String(s).padStart(2, '0')} ao dia ${String(e).padStart(2, '0')} (${countDays} dias).`;
+        helperSpan.style.color = '';
+      }
+    }
+
+    updateGenerationPreview();
+  }
+
   /**
    * Atualiza a prévia e cálculo de demandas antes de gerar a escala
    */
@@ -2117,14 +2314,18 @@ const App = (() => {
     const yearSelect = document.getElementById('gen-year-select');
     if (!monthSelect || !yearSelect) return;
 
-    const month = parseInt(monthSelect.value, 10);
-    const year = parseInt(yearSelect.value, 10);
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const range = getSelectedScheduleRange();
+    const { month, year, daysInMonth, isPartial, startDay, endDay } = range;
     const monthName = getMonthName(month);
 
     const prevMonthLabel = document.getElementById('prev-month-label');
     if (prevMonthLabel) {
-      prevMonthLabel.textContent = `Mês Selecionado: ${monthName} de ${year} (${daysInMonth} dias)`;
+      if (isPartial) {
+        const countDays = endDay >= startDay ? (endDay - startDay + 1) : 0;
+        prevMonthLabel.textContent = `Mês Selecionado: ${monthName} de ${year} • Parcial (Dias ${String(startDay).padStart(2, '0')} a ${String(endDay).padStart(2, '0')} • ${countDays} dias)`;
+      } else {
+        prevMonthLabel.textContent = `Mês Selecionado: ${monthName} de ${year} (${daysInMonth} dias)`;
+      }
     }
 
     const selectedSegment = 'Ministro da Eucaristia';
@@ -2143,7 +2344,7 @@ const App = (() => {
     let countFestaShifts = 0;
     let countFestaSlots = 0;
 
-    for (let day = 1; day <= daysInMonth; day++) {
+    for (let day = startDay; day <= endDay; day++) {
       if (Array.isArray(state.excludedDays) && state.excludedDays.includes(day)) {
         continue;
       }
@@ -2326,11 +2527,22 @@ const App = (() => {
       }
     }
 
-    const month = parseInt(document.getElementById('gen-month-select').value, 10);
-    const year = parseInt(document.getElementById('gen-year-select').value, 10);
+    const range = getSelectedScheduleRange();
+    const { month, year, daysInMonth, isPartial, startDay, endDay } = range;
 
-    // Gera lista de todos os dias do mês
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    if (isPartial) {
+      if (startDay > endDay) {
+        showToast('O dia inicial não pode ser maior que o dia final da escala parcial.', true);
+        const startInput = document.getElementById('gen-start-day');
+        if (startInput) startInput.focus();
+        return;
+      }
+      if (startDay < 1 || endDay > daysInMonth) {
+        showToast(`Os dias da escala parcial devem estar entre 1 e ${daysInMonth}.`, true);
+        return;
+      }
+    }
+
     const shifts = [];
 
     // Fila circular pointer (suporta modo unificado e filas independentes por modalidade)
@@ -2404,8 +2616,8 @@ const App = (() => {
       return picked;
     }
 
-    // Processa cada dia do mês a partir de scheduleWeekConfig
-    for (let day = 1; day <= daysInMonth; day++) {
+    // Processa cada dia do período selecionado a partir de scheduleWeekConfig
+    for (let day = startDay; day <= endDay; day++) {
       const dateObj = new Date(year, month, day);
       const dayOfWeek = dateObj.getDay();
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -2500,6 +2712,10 @@ const App = (() => {
       month,
       year,
       monthName: getMonthName(month),
+      isPartial,
+      startDay: isPartial ? startDay : 1,
+      endDay: isPartial ? endDay : daysInMonth,
+      periodLabel: isPartial ? `Dias ${String(startDay).padStart(2, '0')} a ${String(endDay).padStart(2, '0')}` : '',
       segment: 'Ministro da Eucaristia',
       segmentTitle: 'Ministério Extraordinário da Sagrada Comunhão (MESC)',
       excludedDays: [...(state.excludedDays || [])],
@@ -2512,10 +2728,11 @@ const App = (() => {
     setScheduleView('cards');
     switchTab('tab-calendar');
 
+    const periodDesc = isPartial ? ` (Dias ${String(startDay).padStart(2, '0')} a ${String(endDay).padStart(2, '0')})` : '';
     if (unfilledSlotsTotal > 0) {
-      showToast(`Escala de ${getMonthName(month)} de ${year} gerada! (${unfilledSlotsTotal} vaga(s) não preenchida(s) para respeitar a disponibilidade dos ministros).`);
+      showToast(`Escala de ${getMonthName(month)} de ${year}${periodDesc} gerada! (${unfilledSlotsTotal} vaga(s) não preenchida(s) para respeitar a disponibilidade dos ministros).`);
     } else {
-      showToast(`Escala de ${getMonthName(month)} de ${year} gerada com sucesso!`);
+      showToast(`Escala de ${getMonthName(month)} de ${year}${periodDesc} gerada com sucesso!`);
     }
   }
 
@@ -2691,7 +2908,10 @@ const App = (() => {
     const dashMonth = document.getElementById('dash-current-month');
     const dashTotalShifts = document.getElementById('dash-total-shifts');
     if (state.currentSchedule) {
-      if (dashMonth) dashMonth.textContent = `${state.currentSchedule.monthName} ${state.currentSchedule.year}`;
+      const pSuffix = state.currentSchedule.isPartial
+        ? ` (${String(state.currentSchedule.startDay || 1).padStart(2, '0')} a ${String(state.currentSchedule.endDay || 31).padStart(2, '0')})`
+        : '';
+      if (dashMonth) dashMonth.textContent = `${state.currentSchedule.monthName} ${state.currentSchedule.year}${pSuffix}`;
       if (dashTotalShifts) dashTotalShifts.textContent = `${state.currentSchedule.shifts.length} celebrações escaladas`;
     } else {
       if (dashMonth) dashMonth.textContent = 'Nenhuma';
@@ -2771,8 +2991,12 @@ const App = (() => {
     if (state.currentSchedule && Array.isArray(state.currentSchedule.excludedDays) && state.currentSchedule.excludedDays.length > 0 && Array.isArray(state.currentSchedule.shifts)) {
       const year = state.currentSchedule.year;
       const month = state.currentSchedule.month;
+      const isPartial = !!state.currentSchedule.isPartial;
+      const pStart = state.currentSchedule.startDay || 1;
+      const pEnd = state.currentSchedule.endDay || 31;
       let modified = false;
       state.currentSchedule.excludedDays.forEach(d => {
+        if (isPartial && (d < pStart || d > pEnd)) return;
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         if (!state.currentSchedule.shifts.some(s => s.date === dateStr)) {
           const dateObj = new Date(year, month, d);
@@ -2823,10 +3047,15 @@ const App = (() => {
       return;
     }
 
-    const { monthName, year, shifts, segment, segmentTitle } = state.currentSchedule;
+    const { monthName, year, shifts, segment, segmentTitle, isPartial, startDay, endDay, periodLabel } = state.currentSchedule;
     const finalTitle = segmentTitle || getSegmentTitle(segment);
-    if (titleEl) titleEl.textContent = `${finalTitle} • ${monthName} de ${year}`;
-    if (activePill) activePill.style.display = 'inline-block';
+    const periodSuffix = isPartial ? ` (Dias ${String(startDay || 1).padStart(2, '0')} a ${String(endDay || 31).padStart(2, '0')})` : '';
+
+    if (titleEl) titleEl.textContent = `${finalTitle} • ${monthName} de ${year}${periodSuffix}`;
+    if (activePill) {
+      activePill.style.display = 'inline-block';
+      activePill.textContent = isPartial ? `Vigente: ${periodLabel || `${startDay} a ${endDay}`}` : 'Escala Vigente';
+    }
 
     // Atualiza título da folha de impressão / PDF
     const printSheetTitle = document.getElementById('print-sheet-title');
@@ -2834,7 +3063,8 @@ const App = (() => {
       printSheetTitle.textContent = finalTitle;
     }
     if (printTitle) {
-      printTitle.textContent = `${monthName.toUpperCase()} DE ${year} • PARÓQUIA NOSSA SENHORA APARECIDA`;
+      const printPeriodSuffix = isPartial ? ` (DIAS ${String(startDay || 1).padStart(2, '0')} A ${String(endDay || 31).padStart(2, '0')})` : '';
+      printTitle.textContent = `${monthName.toUpperCase()} DE ${year}${printPeriodSuffix} • PARÓQUIA NOSSA SENHORA APARECIDA`;
     }
 
     // Atualiza lembretes específicos do segmento no rodapé da folha de impressão / PDF
@@ -3020,6 +3250,10 @@ const App = (() => {
     }
 
     // 2. Dias do mês (1 até totalDays)
+    const isSchedulePartial = !!schedule.isPartial;
+    const pStart = schedule.startDay || 1;
+    const pEnd = schedule.endDay || totalDays;
+
     for (let d = 1; d <= totalDays; d++) {
       const dateObj = new Date(year, month, d);
       const dayOfWeek = dateObj.getDay();
@@ -3028,6 +3262,7 @@ const App = (() => {
       const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
       const festaMatch = state.festas.find(f => f.date === dateStr);
       const hasFesta = dayShifts.some(s => s.type === 'festa') || !!festaMatch;
+      const isOutsidePeriod = isSchedulePartial && (d < pStart || d > pEnd);
 
       cells.push({
         type: 'day',
@@ -3036,6 +3271,7 @@ const App = (() => {
         dateStr,
         isWeekend,
         hasFesta,
+        isOutsidePeriod,
         festaTitle: festaMatch ? festaMatch.title : '',
         shifts: dayShifts
       });
@@ -3062,12 +3298,13 @@ const App = (() => {
           <div class="cal-board-header-bar">
             <div class="cal-board-title">
               <span class="cal-board-icon">📅</span>
-              <span>Quadro Mensal Litúrgico • <strong>${monthName} de ${year}</strong></span>
+              <span>Quadro Mensal Litúrgico • <strong>${monthName} de ${year}${schedule.isPartial ? ` (Dias ${String(schedule.startDay).padStart(2, '0')} a ${String(schedule.endDay).padStart(2, '0')})` : ''}</strong></span>
             </div>
             <div class="cal-board-legend">
               <span class="cal-legend-badge bg-festa">⭐ Festa</span>
               <span class="cal-legend-badge bg-weekend">Sáb / Dom</span>
               <span class="cal-legend-badge bg-subst">🔄 Substituto</span>
+              ${schedule.isPartial ? '<span class="cal-legend-badge" style="background:var(--bg-muted);color:var(--text-muted);border:1px dashed var(--border-color);">⚪ Fora do período</span>' : ''}
             </div>
           </div>
         ` : ''}
@@ -3099,6 +3336,7 @@ const App = (() => {
                   const cellClasses = ['cal-cell'];
                   if (cell.isWeekend) cellClasses.push('cal-cell-weekend');
                   if (cell.hasFesta) cellClasses.push('cal-cell-festa');
+                  if (cell.isOutsidePeriod) cellClasses.push('cal-cell-outside-period');
                   if (cell.shifts.length === 0) cellClasses.push('cal-cell-no-shift');
                   if (cell.shifts.some(s => s.isExcludedDay || s.type === 'sem_missa')) cellClasses.push('cal-cell-excluded');
 
@@ -3106,7 +3344,14 @@ const App = (() => {
                   const cleanFestaTitle = rawFestaTitle ? rawFestaTitle.replace(/^[⭐\s*]+/, '').trim() : '';
 
                   let cellBodyHtml = '';
-                  if (cell.shifts.length === 0) {
+                  if (cell.isOutsidePeriod) {
+                    cellBodyHtml = `
+                      <div class="cal-no-shift-container cal-outside-period-box">
+                        <span class="cal-outside-text">Fora do período</span>
+                        <span class="cal-outside-sub">Não escalado</span>
+                      </div>
+                    `;
+                  } else if (cell.shifts.length === 0) {
                     cellBodyHtml = `
                       <div class="cal-no-shift-container">
                         <span class="cal-no-shift-text">Sem celebração</span>
@@ -4315,8 +4560,9 @@ const App = (() => {
       return;
     }
 
-    const { monthName, year, shifts } = state.currentSchedule;
-    let text = `*ESCALA DE MINISTROS DA EUCARISTIA (MESC) - ${monthName.toUpperCase()} / ${year}*\n`;
+    const { monthName, year, shifts, isPartial, startDay, endDay } = state.currentSchedule;
+    const partialSuffix = isPartial ? ` (DIAS ${String(startDay || 1).padStart(2, '0')} A ${String(endDay || 31).padStart(2, '0')})` : '';
+    let text = `*ESCALA DE MINISTROS DA EUCARISTIA (MESC) - ${monthName.toUpperCase()} / ${year}${partialSuffix}*\n`;
     text += `_Paróquia Nossa Senhora Aparecida_\n\n`;
 
     shifts.forEach(shift => {
@@ -4731,6 +4977,9 @@ const App = (() => {
     exportToWhatsApp,
     handleTimeInput,
     handleSegmentChange,
+    handlePeriodTypeChange,
+    handlePartialDaysInput,
+    getSelectedScheduleRange,
     openExcludedDaysModal,
     closeExcludedDaysModal,
     toggleExcludedDay,

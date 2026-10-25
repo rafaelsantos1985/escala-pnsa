@@ -531,6 +531,46 @@
                 <!-- Segmento da escala (fixo em Ministros da Eucaristia) -->
                 <input type="hidden" id="gen-segment-select" value="Ministro da Eucaristia">
 
+                <!-- Configuração de Período da Escala (Mês Completo ou Escala Parcial) -->
+                <div class="schedule-period-card">
+                  <div class="period-inputs-row">
+                    <div class="form-group period-type-group" style="margin-bottom: 0;">
+                      <label for="gen-period-type" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>Período da Escala</span>
+                        <span class="badge badge-secondary period-badge-chip" id="gen-period-badge">Mês Completo</span>
+                      </label>
+                      <select id="gen-period-type" onchange="App.handlePeriodTypeChange()">
+                        <option value="full">Mês Completo (Mês Inteiro)</option>
+                        <option value="quinzena1">1ª Quinzena (Dia 01 a 15)</option>
+                        <option value="quinzena2">2ª Quinzena (Dia 16 ao fim do mês)</option>
+                        <option value="custom">Personalizado (Definir Dias)</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group period-custom-days-group" id="gen-custom-days-group" style="margin-bottom: 0; display: none;">
+                      <label style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Intervalo de Dias</span>
+                        <span id="gen-days-count-hint" style="color: var(--primary-600); font-weight: 700; font-size: 0.75rem;">15 dias</span>
+                      </label>
+                      <div class="partial-days-flex">
+                        <div class="partial-day-col">
+                          <label for="gen-start-day" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px;">De (Dia):</label>
+                          <input type="number" id="gen-start-day" min="1" max="31" value="1" class="form-control" oninput="App.handlePartialDaysInput()" onchange="App.handlePartialDaysInput()" style="text-align: center; font-weight: 700; padding: 0.55rem 0.6rem;">
+                        </div>
+                        <div class="partial-day-col">
+                          <label for="gen-end-day" style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 2px;">Até (Dia):</label>
+                          <input type="number" id="gen-end-day" min="1" max="31" value="15" class="form-control" oninput="App.handlePartialDaysInput()" onchange="App.handlePartialDaysInput()" style="text-align: center; font-weight: 700; padding: 0.55rem 0.6rem;">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="gen-period-helper-text" class="period-helper-text">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span id="gen-period-helper-span">A escala será gerada para todos os dias do mês selecionado.</span>
+                  </div>
+                </div>
+
                 <!-- Bloco Proeminente: Exceções de Dias Sem Missa -->
                 <div class="specific-exceptions-card">
                   <div class="specific-exceptions-content">
