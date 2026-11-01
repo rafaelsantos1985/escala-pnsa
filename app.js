@@ -2161,6 +2161,22 @@ const App = (() => {
     showToast('Horários canônicos padrão da paróquia restaurados com sucesso!');
   }
 
+  /**
+   * Verifica se uma escala está vencida (ou seja, seu mês e ano são anteriores ao mês e ano correntes)
+   */
+  function isScheduleExpired(schedule) {
+    if (!schedule || typeof schedule.year !== 'number' || typeof schedule.month !== 'number') {
+      return false;
+    }
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    if (schedule.year < currentYear) return true;
+    if (schedule.year === currentYear && schedule.month < currentMonth) return true;
+    return false;
+  }
+
   /* ==========================================================================
      GERENCIADOR DE PERÍODO DA ESCALA (MÊS COMPLETO OU PARCIAL)
      ========================================================================== */
@@ -2969,15 +2985,44 @@ const App = (() => {
     // Escala Vigente
     const dashMonth = document.getElementById('dash-current-month');
     const dashTotalShifts = document.getElementById('dash-total-shifts');
+    const dashExpiredBanner = document.getElementById('dash-expired-schedule-banner');
+    const dashExpiredText = document.getElementById('dash-expired-schedule-text');
+
     if (state.currentSchedule) {
       const pSuffix = state.currentSchedule.isPartial
         ? ` (${String(state.currentSchedule.startDay || 1).padStart(2, '0')} a ${String(state.currentSchedule.endDay || 31).padStart(2, '0')})`
         : '';
-      if (dashMonth) dashMonth.textContent = `${state.currentSchedule.monthName} ${state.currentSchedule.year}${pSuffix}`;
-      if (dashTotalShifts) dashTotalShifts.textContent = `${state.currentSchedule.shifts.length} celebrações escaladas`;
+      const isExpired = isScheduleExpired(state.currentSchedule);
+
+      if (dashMonth) {
+        if (isExpired) {
+          dashMonth.innerHTML = `${escapeHtml(state.currentSchedule.monthName)} ${state.currentSchedule.year}${pSuffix} <span class="metric-expired-badge">⚠️ Vencida</span>`;
+        } else {
+          dashMonth.textContent = `${state.currentSchedule.monthName} ${state.currentSchedule.year}${pSuffix}`;
+        }
+      }
+      if (dashTotalShifts) {
+        if (isExpired) {
+          dashTotalShifts.textContent = `Mês anterior encerrado (${state.currentSchedule.shifts.length} celebrações passadas)`;
+        } else {
+          dashTotalShifts.textContent = `${state.currentSchedule.shifts.length} celebrações escaladas`;
+        }
+      }
+
+      if (dashExpiredBanner) {
+        if (isExpired) {
+          dashExpiredBanner.style.display = 'flex';
+          if (dashExpiredText) {
+            dashExpiredText.textContent = `A escala registrada no sistema é de ${state.currentSchedule.monthName} de ${state.currentSchedule.year} (mês anterior) e já está vencida. Gere a nova escala para o mês corrente.`;
+          }
+        } else {
+          dashExpiredBanner.style.display = 'none';
+        }
+      }
     } else {
       if (dashMonth) dashMonth.textContent = 'Nenhuma';
       if (dashTotalShifts) dashTotalShifts.textContent = 'Clique para gerar';
+      if (dashExpiredBanner) dashExpiredBanner.style.display = 'none';
     }
 
     // Festas
@@ -3092,10 +3137,14 @@ const App = (() => {
 
     if (!container) return;
 
+    const calExpiredBanner = document.getElementById('cal-expired-schedule-banner');
+    const calExpiredText = document.getElementById('cal-expired-schedule-text');
+
     if (!state.currentSchedule || !state.currentSchedule.shifts || state.currentSchedule.shifts.length === 0) {
       if (titleEl) titleEl.textContent = 'Escala do Mês';
       if (activePill) activePill.style.display = 'none';
       if (printArea) printArea.innerHTML = '';
+      if (calExpiredBanner) calExpiredBanner.style.display = 'none';
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">📅</div>
@@ -3110,13 +3159,32 @@ const App = (() => {
     }
 
     const { monthName, year, shifts, segment, segmentTitle, isPartial, startDay, endDay, periodLabel } = state.currentSchedule;
+    const isExpired = isScheduleExpired(state.currentSchedule);
     const finalTitle = segmentTitle || getSegmentTitle(segment);
     const periodSuffix = isPartial ? ` (Dias ${String(startDay || 1).padStart(2, '0')} a ${String(endDay || 31).padStart(2, '0')})` : '';
+    const expiredSuffix = isExpired ? ' [VENCIDA]' : '';
 
-    if (titleEl) titleEl.textContent = `${finalTitle} • ${monthName} de ${year}${periodSuffix}`;
+    if (titleEl) titleEl.textContent = `${finalTitle} • ${monthName} de ${year}${periodSuffix}${expiredSuffix}`;
     if (activePill) {
       activePill.style.display = 'inline-block';
-      activePill.textContent = isPartial ? `Vigente: ${periodLabel || `${startDay} a ${endDay}`}` : 'Escala Vigente';
+      if (isExpired) {
+        activePill.classList.add('is-expired');
+        activePill.textContent = '⚠️ Escala Vencida';
+      } else {
+        activePill.classList.remove('is-expired');
+        activePill.textContent = isPartial ? `Vigente: ${periodLabel || `${startDay} a ${endDay}`}` : 'Escala Vigente';
+      }
+    }
+
+    if (calExpiredBanner) {
+      if (isExpired) {
+        calExpiredBanner.style.display = 'flex';
+        if (calExpiredText) {
+          calExpiredText.textContent = `Esta escala refere-se a ${monthName} de ${year} (mês anterior) e já se encontra VENCIDA. O período litúrgico encerrou. Gere a escala do mês corrente para novas celebrações.`;
+        }
+      } else {
+        calExpiredBanner.style.display = 'none';
+      }
     }
 
     // Atualiza título da folha de impressão / PDF
@@ -5040,6 +5108,7 @@ const App = (() => {
     handleTimeInput,
     handleSegmentChange,
     handleYearChange,
+    isScheduleExpired,
     updateMonthSelectOptions,
     handlePeriodTypeChange,
     handlePartialDaysInput,

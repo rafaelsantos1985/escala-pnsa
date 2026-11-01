@@ -5989,3 +5989,150 @@ body.theme-dark .cal-cell.cal-cell-outside-period {
   background: rgba(30, 41, 59, 0.5) !important;
   opacity: 0.45;
 }
+
+/* ==================== BANNER E ESTILOS DE ESCALA VENCIDA ==================== */
+.schedule-expired-alert-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #f59e0b;
+  border-left: 6px solid #d97706;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+  animation: fadeInDown 0.3s ease-out;
+}
+
+.expired-alert-icon-wrap {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+}
+
+.expired-alert-content {
+  flex: 1;
+}
+
+.expired-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.expired-alert-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #92400e;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.expired-alert-desc {
+  font-size: 0.82rem;
+  color: #b45309;
+  margin: 4px 0 0;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.expired-alert-action {
+  flex-shrink: 0;
+}
+
+.btn-warning-prominent {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid #b45309 !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 16px !important;
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.btn-warning-prominent:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.badge-expired-chip {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  padding: 3px 8px !important;
+  border-radius: var(--radius-pill) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+
+.tab-pill.is-expired {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.metric-expired-badge {
+  display: inline-block;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #f87171;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  margin-top: 4px;
+}
+
+/* Dark mode para alerta de escala vencida */
+body.theme-dark .schedule-expired-alert-banner {
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.45) 0%, rgba(180, 83, 9, 0.25) 100%);
+  border: 2px solid #f59e0b;
+  border-left: 6px solid #fbbf24;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .expired-alert-title {
+  color: #fef3c7;
+}
+
+body.theme-dark .expired-alert-desc {
+  color: #fde68a;
+}
+
+body.theme-dark .metric-expired-badge {
+  background: rgba(220, 38, 38, 0.25);
+  color: #fca5a5;
+  border-color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .schedule-expired-alert-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .expired-alert-action {
+    width: 100%;
+  }
+  .expired-alert-action .btn-warning-prominent {
+    width: 100%;
+    justify-content: center;
+  }
+}
