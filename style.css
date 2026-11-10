@@ -6136,3 +6136,349 @@ body.theme-dark .metric-expired-badge {
     justify-content: center;
   }
 }
+
+
+/* ==================== ANIMAÇÃO DE BORDAS PISCANTES PARA ESCALA VENCIDA ==================== */
+@keyframes expiredBorderBlink {
+  0%, 100% {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35), 0 4px 14px rgba(245, 158, 11, 0.25);
+  }
+  50% {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.5), 0 0 22px rgba(220, 38, 38, 0.45);
+  }
+}
+
+.schedule-expired-alert-banner {
+  border-width: 2.5px !important;
+  border-left-width: 7px !important;
+  animation: fadeInDown 0.3s ease-out, expiredBorderBlink 1.1s infinite ease-in-out !important;
+}
+
+.metric-card.is-expired-card {
+  border: 2.5px solid #ef4444 !important;
+  animation: expiredBorderBlink 1.1s infinite ease-in-out !important;
+}
+
+.metric-expired-badge,
+.tab-pill.is-expired {
+  border: 1.5px solid #fca5a5 !important;
+  animation: expiredBorderBlink 1.1s infinite ease-in-out !important;
+}
+
+/* ==================== CORES DISTINTAS POR COMUNIDADE / PARÓQUIA ==================== */
+.comm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1.5px solid transparent;
+  letter-spacing: 0.01em;
+}
+
+/* Matriz - Dourado / Âmbar Real */
+.comm-badge-matriz {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+/* São Cristóvão - Azul Royal */
+.comm-badge-sao-cristovao {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #3b82f6;
+}
+
+/* Santa Terezinha - Rosa / Magenta */
+.comm-badge-santa-terezinha {
+  background: #fce7f3;
+  color: #9d174d;
+  border-color: #ec4899;
+}
+
+/* São Miguel - Verde Esmeralda */
+.comm-badge-sao-miguel {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #10b981;
+}
+
+/* São José Operário - Roxo / Violeta */
+.comm-badge-sao-jose {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-color: #8b5cf6;
+}
+
+/* Outras Comunidades - Ciano / Teal */
+.comm-badge-outro {
+  background: #ccfbf1;
+  color: #115e59;
+  border-color: #14b8a6;
+}
+
+/* Dark Mode para badges de comunidade */
+body.theme-dark .comm-badge-matriz {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fde68a;
+  border-color: #f59e0b;
+}
+body.theme-dark .comm-badge-sao-cristovao {
+  background: rgba(59, 130, 246, 0.22);
+  color: #bfdbfe;
+  border-color: #60a5fa;
+}
+body.theme-dark .comm-badge-santa-terezinha {
+  background: rgba(236, 72, 153, 0.22);
+  color: #fbcfe8;
+  border-color: #f472b6;
+}
+body.theme-dark .comm-badge-sao-miguel {
+  background: rgba(16, 185, 129, 0.22);
+  color: #a7f3d0;
+  border-color: #34d399;
+}
+body.theme-dark .comm-badge-sao-jose {
+  background: rgba(139, 92, 246, 0.22);
+  color: #ddd6fe;
+  border-color: #a78bfa;
+}
+body.theme-dark .comm-badge-outro {
+  background: rgba(20, 184, 166, 0.22);
+  color: #99f6e4;
+  border-color: #2dd4bf;
+}
+
+/* Cores nos filtros de comunidade da lista de inscritos */
+.members-filter-bar .filter-pill[data-comm-filter="Matriz"].active {
+  background: #d97706 !important;
+  border-color: #b45309 !important;
+  color: #ffffff !important;
+}
+.members-filter-bar .filter-pill[data-comm-filter="São Cristóvão"].active {
+  background: #2563eb !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+.members-filter-bar .filter-pill[data-comm-filter="Santa Terezinha"].active {
+  background: #db2777 !important;
+  border-color: #be185d !important;
+  color: #ffffff !important;
+}
+.members-filter-bar .filter-pill[data-comm-filter="São Miguel"].active {
+  background: #059669 !important;
+  border-color: #047857 !important;
+  color: #ffffff !important;
+}
+.members-filter-bar .filter-pill[data-comm-filter="São José Operário"].active {
+  background: #7c3aed !important;
+  border-color: #6d28d9 !important;
+  color: #ffffff !important;
+}
+.members-filter-bar .filter-pill[data-comm-filter="OUTRO"].active {
+  background: #0d9488 !important;
+  border-color: #0f766e !important;
+  color: #ffffff !important;
+}
+
+/* ==================== CARD DE COMUNIDADE NO GERADOR ==================== */
+.schedule-community-card {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-left: 6px solid #047857;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+  transition: all var(--transition-fast);
+}
+
+.community-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.community-card-icon-wrap {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 8px rgba(4, 120, 87, 0.35);
+}
+
+.community-card-text {
+  flex: 1;
+}
+
+.community-title-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.community-card-title {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #064e3b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.community-card-subtitle {
+  font-size: 0.78rem;
+  color: #065f46;
+  margin: 3px 0 0;
+  line-height: 1.35;
+}
+
+.community-select-row {
+  background: rgba(255, 255, 255, 0.88);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+}
+
+.community-select-field {
+  background: #ffffff !important;
+  border: 1.5px solid #10b981 !important;
+  color: #064e3b !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+.community-helper-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #065f46;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.35;
+}
+
+.community-badge-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+}
+
+body.theme-dark .schedule-community-card {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.45) 0%, rgba(4, 120, 87, 0.25) 100%);
+  border: 2px solid #10b981;
+  border-left: 6px solid #34d399;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+body.theme-dark .community-card-title { color: #d1fae5; }
+body.theme-dark .community-card-subtitle,
+body.theme-dark .community-helper-text { color: #6ee7b7; }
+body.theme-dark .community-select-row {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+body.theme-dark .community-select-field {
+  background: #1e293b !important;
+  border-color: #34d399 !important;
+  color: #f8fafc !important;
+}
+
+/* ==================== MODAL DE ESCOLHA MULTI-OPÇÕES ==================== */
+.choice-modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.choice-option-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.choice-option-btn:hover {
+  border-color: var(--primary-600);
+  background: rgba(47, 94, 163, 0.06);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.choice-option-btn.is-recommended {
+  border-color: #d97706;
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.45) 0%, rgba(253, 230, 138, 0.25) 100%);
+}
+
+.choice-option-btn.is-recommended:hover {
+  border-color: #b45309;
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.75) 0%, rgba(253, 230, 138, 0.45) 100%);
+}
+
+.choice-option-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.choice-option-body {
+  flex: 1;
+}
+
+.choice-option-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--text-main);
+  margin-bottom: 3px;
+}
+
+.choice-option-desc {
+  font-size: 0.79rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.choice-rec-pill {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: #d97706;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+body.theme-dark .choice-option-btn.is-recommended {
+  background: rgba(217, 119, 6, 0.18);
+  border-color: #f59e0b;
+}

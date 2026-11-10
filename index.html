@@ -170,7 +170,7 @@
               </div>
             </div>
 
-            <div class="metric-card card-teal">
+            <div class="metric-card card-teal" id="dash-metric-schedule-card">
               <div class="metric-icon-wrap bg-teal-subtle">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               </div>
@@ -606,6 +606,43 @@
                   <div id="gen-period-helper-text" class="period-helper-text">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                     <span id="gen-period-helper-span">A escala será gerada para todos os dias do mês selecionado.</span>
+                  </div>
+                </div>
+
+                <!-- Card de Seleção de Comunidade / Paróquia dos Ministros -->
+                <div class="schedule-community-card">
+                  <div class="community-card-header">
+                    <div class="community-card-icon-wrap">
+                      <span class="community-icon">⛪</span>
+                    </div>
+                    <div class="community-card-text">
+                      <div class="community-title-badge-wrap">
+                        <h4 class="community-card-title">Comunidade / Paróquia dos Ministros</h4>
+                        <span class="badge badge-success community-badge-chip" id="gen-community-badge">Apenas Matriz</span>
+                      </div>
+                      <p class="community-card-subtitle">
+                        Por padrão, apenas os ministros da <strong>Matriz</strong> entram nesta escala. Altere abaixo caso deseje escalar outra comunidade ou <strong>TODAS</strong>:
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="community-select-row">
+                    <div class="form-group" style="margin-bottom: 0; width: 100%;">
+                      <label for="gen-community-select" style="font-weight: 700; font-size: 0.8rem; margin-bottom: 4px;">Comunidade Participante:</label>
+                      <select id="gen-community-select" class="community-select-field" onchange="App.handleGenCommunityChange()">
+                        <option value="Matriz" selected>⛪ Apenas Matriz (Padrão)</option>
+                        <option value="all">🌐 Geral — TODAS as Comunidades</option>
+                        <option value="São Cristóvão">⛪ São Cristóvão</option>
+                        <option value="Santa Terezinha">⛪ Santa Terezinha</option>
+                        <option value="São Miguel">⛪ São Miguel</option>
+                        <option value="São José Operário">⛪ São José Operário</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div id="gen-community-helper-text" class="community-helper-text">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span id="gen-community-helper-span">Apenas os ministros ativos da Matriz serão escalados. Em dias de Festa, você poderá incluir outras comunidades.</span>
                   </div>
                 </div>
 
@@ -1198,6 +1235,28 @@
       <div class="confirm-dialog-footer">
         <button type="button" class="btn btn-outline" id="confirm-btn-cancel" onclick="App.closeConfirmModal(false)">Cancelar</button>
         <button type="button" class="btn btn-danger" id="confirm-btn-action" onclick="App.closeConfirmModal(true)">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ESCOLHA DE OPÇÕES (INÍCIO / FESTAS) ==================== -->
+  <div id="modal-choice" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-confirm" style="max-width: 520px;">
+      <div class="confirm-dialog-header">
+        <div class="confirm-icon-wrapper warning" id="choice-icon-wrapper">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        </div>
+        <button class="modal-close-btn" onclick="App.closeChoiceModal(null)">&times;</button>
+      </div>
+      <div class="confirm-dialog-body">
+        <h3 class="confirm-dialog-title" id="choice-modal-title">Escolha uma Opção</h3>
+        <p class="confirm-dialog-message" id="choice-modal-message" style="margin-bottom: 1.15rem;"></p>
+        <div id="choice-modal-options" class="choice-modal-options">
+          <!-- Botões de escolha renderizados dinamicamente -->
+        </div>
+      </div>
+      <div class="confirm-dialog-footer" style="margin-top: 1rem;">
+        <button type="button" class="btn btn-outline" onclick="App.closeChoiceModal(null)">Cancelar Geração</button>
       </div>
     </div>
   </div>

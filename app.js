@@ -222,6 +222,8 @@ const App = (() => {
         if (e.target === backdrop) {
           if (backdrop.id === 'modal-confirm') {
             closeConfirmModal(false);
+          } else if (backdrop.id === 'modal-choice') {
+            closeChoiceModal(null);
           } else {
             closeModal(backdrop.id);
           }
@@ -235,6 +237,8 @@ const App = (() => {
         if (openBackdrop) {
           if (openBackdrop.id === 'modal-confirm') {
             closeConfirmModal(false);
+          } else if (openBackdrop.id === 'modal-choice') {
+            closeChoiceModal(null);
           } else {
             closeModal(openBackdrop.id);
           }
@@ -595,6 +599,7 @@ const App = (() => {
     populateRoleFilter();
     renderMembersTable();
     populateSegmentSelect();
+    populateGenCommunitySelect();
     renderSchedule();
     renderScheduleWeekConfig();
     renderFestasList();
@@ -751,14 +756,126 @@ const App = (() => {
   }
 
   /**
-   * Retorna os membros ativos, opcionalmente filtrados por segmento/função
+   * Retorna a classe CSS correspondente à comunidade/paróquia do ministro para cores distintas
    */
-  function getActiveMembers(segmentFilter = null) {
-    const active = state.members.filter(m => m.active !== false);
-    if (!segmentFilter || segmentFilter === 'all') {
-      return active;
+  function getCommunityBadgeClass(communityName) {
+    const c = (communityName || 'Matriz').trim().toLowerCase();
+    if (c === 'matriz') return 'comm-badge-matriz';
+    if (c.includes('cristóvão') || c.includes('cristovao')) return 'comm-badge-sao-cristovao';
+    if (c.includes('terezinha')) return 'comm-badge-santa-terezinha';
+    if (c.includes('miguel')) return 'comm-badge-sao-miguel';
+    if (c.includes('josé') || c.includes('jose')) return 'comm-badge-sao-jose';
+    return 'comm-badge-outro';
+  }
+
+  /**
+   * Renderiza a pílula colorida da comunidade do ministro
+   */
+  function renderCommunityBadge(communityName) {
+    const name = communityName || 'Matriz';
+    const cls = getCommunityBadgeClass(name);
+    return `<span class="comm-badge ${cls}">⛪ ${escapeHtml(name)}</span>`;
+  }
+
+  /**
+   * Retorna os membros ativos, opcionalmente filtrados por segmento/função e por comunidade
+   */
+  function getActiveMembers(segmentFilter = null, communityFilter = null) {
+    let active = state.members.filter(m => m.active !== false);
+    if (segmentFilter && segmentFilter !== 'all') {
+      active = active.filter(m => memberHasRole(m, segmentFilter));
     }
-    return active.filter(m => memberHasRole(m, segmentFilter));
+    if (communityFilter && communityFilter !== 'all') {
+      const targetComm = communityFilter.trim().toLowerCase();
+      active = active.filter(m => (m.community || 'Matriz').trim().toLowerCase() === targetComm);
+    }
+    return active;
+  }
+
+  /**
+   * Popula o seletor de comunidade na aba de Gerar Escala mantendo 'Matriz' como padrão
+   */
+  function populateGenCommunitySelect() {
+    const select = document.getElementById('gen-community-select');
+    if (!select) return;
+
+    const currentVal = select.value || 'Matriz';
+    const baseCommunities = ['Matriz', 'São Cristóvão', 'Santa Terezinha', 'São Miguel', 'São José Operário'];
+    const customCommunities = new Set();
+
+    state.members.forEach(m => {
+      const comm = (m.community || 'Matriz').trim();
+      if (comm && !baseCommunities.some(bc => bc.toLowerCase() === comm.toLowerCase())) {
+        customCommunities.add(comm);
+      }
+    });
+
+    const matrizCount = getActiveMembers('Ministro da Eucaristia', 'Matriz').length;
+    const allCount = getActiveMembers('Ministro da Eucaristia', 'all').length;
+
+    let html = `
+      <option value="Matriz">⛪ Apenas Matriz — Padrão (${matrizCount} ativos)</option>
+      <option value="all">🌐 Geral — TODAS as Comunidades (${allCount} ativos)</option>
+    `;
+
+    baseCommunities.filter(c => c !== 'Matriz').forEach(comm => {
+      const cnt = getActiveMembers('Ministro da Eucaristia', comm).length;
+      html += `<option value="${escapeHtml(comm)}">⛪ ${escapeHtml(comm)} (${cnt} ativos)</option>`;
+    });
+
+    Array.from(customCommunities).sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(comm => {
+      const cnt = getActiveMembers('Ministro da Eucaristia', comm).length;
+      html += `<option value="${escapeHtml(comm)}">⛪ ${escapeHtml(comm)} (${cnt} ativos)</option>`;
+    });
+
+    select.innerHTML = html;
+
+    const validValues = Array.from(select.options).map(o => o.value);
+    if (validValues.includes(currentVal)) {
+      select.value = currentVal;
+    } else {
+      select.value = 'Matriz';
+    }
+
+    updateGenCommunityCardUI();
+  }
+
+  function updateGenCommunityCardUI() {
+    const select = document.getElementById('gen-community-select');
+    const badge = document.getElementById('gen-community-badge');
+    const helperSpan = document.getElementById('gen-community-helper-span');
+    if (!select) return;
+
+    const val = select.value || 'Matriz';
+    const count = getActiveMembers('Ministro da Eucaristia', val).length;
+
+    if (badge) {
+      if (val === 'all') {
+        badge.className = 'badge badge-gold community-badge-chip';
+        badge.textContent = `Todas (${count} ativos)`;
+      } else if (val === 'Matriz') {
+        badge.className = 'badge badge-success community-badge-chip';
+        badge.textContent = `Apenas Matriz (${count} ativos)`;
+      } else {
+        badge.className = 'badge badge-primary community-badge-chip';
+        badge.textContent = `${val} (${count} ativos)`;
+      }
+    }
+
+    if (helperSpan) {
+      if (val === 'all') {
+        helperSpan.textContent = `Modo Geral ativado: todos os ${count} ministros ativos de todas as comunidades participarão da escala.`;
+      } else if (val === 'Matriz') {
+        helperSpan.textContent = `Padrão ativo: apenas os ${count} ministros ativos da Matriz entrarão nesta rodada. Se houver Missas de Festa, você poderá incluir outras comunidades.`;
+      } else {
+        helperSpan.textContent = `Filtro específico: apenas os ${count} ministros ativos de ${val} entrarão nesta escala.`;
+      }
+    }
+  }
+
+  function handleGenCommunityChange() {
+    updateGenCommunityCardUI();
+    updateGenerationPreview();
   }
 
   /**
@@ -1564,9 +1681,7 @@ const App = (() => {
             </div>
           </td>
           <td>
-            <span class="badge" style="background: rgba(212, 175, 55, 0.15); color: var(--gold-600); font-weight: 700; border: 1px solid rgba(212, 175, 55, 0.3); font-size: 0.75rem; white-space: nowrap;">
-              ⛪ ${escapeHtml(communityName)}
-            </span>
+            ${renderCommunityBadge(communityName)}
           </td>
           <td>${renderPrefBadges(m)}</td>
           <td style="text-align: center; white-space: nowrap;">
@@ -2393,11 +2508,15 @@ const App = (() => {
     }
 
     const selectedSegment = 'Ministro da Eucaristia';
-    const activeMembers = getActiveMembers(selectedSegment);
+    const commSelect = document.getElementById('gen-community-select');
+    const selectedCommunity = commSelect ? commSelect.value : 'Matriz';
+    const activeMembers = getActiveMembers(selectedSegment, selectedCommunity);
     const activeMembersBadge = document.getElementById('prev-active-members-badge');
     if (activeMembersBadge) {
-      activeMembersBadge.textContent = `${activeMembers.length} Ministros Ativos (MESC)`;
+      const commLabel = selectedCommunity === 'all' ? 'Todas Comunidades' : selectedCommunity;
+      activeMembersBadge.textContent = `${activeMembers.length} Ministros (${commLabel})`;
     }
+    updateGenCommunityCardUI();
 
     let countWeekdayShifts = 0;
     let countWeekdaySlots = 0;
@@ -2488,9 +2607,10 @@ const App = (() => {
 
     if (alertBox && alertText && alertIcon) {
       if (activeMembers.length === 0) {
+        const commText = selectedCommunity === 'all' ? 'cadastrado' : `na comunidade "${selectedCommunity}"`;
         alertBox.className = 'preview-alert-box alert-warning';
         alertIcon.textContent = '⚠️';
-        alertText.textContent = `Nenhum Ministro da Eucaristia ativo cadastrado. Cadastre ministros ativos primeiro.`;
+        alertText.textContent = `Nenhum Ministro da Eucaristia ativo ${commText}. Cadastre ministros ou altere a comunidade.`;
       } else if (parseFloat(avgPerPerson) > 6) {
         alertBox.className = 'preview-alert-box alert-warning';
         alertIcon.textContent = '⚠️';
@@ -2507,9 +2627,16 @@ const App = (() => {
     if (event) event.preventDefault();
 
     const selectedSegment = 'Ministro da Eucaristia';
-    const activeMembers = getActiveMembers(selectedSegment);
+    const commSelect = document.getElementById('gen-community-select');
+    const selectedCommunity = commSelect ? (commSelect.value || 'Matriz') : 'Matriz';
+    const activeMembers = getActiveMembers(selectedSegment, selectedCommunity);
+    const allSegmentMembers = getActiveMembers(selectedSegment, 'all');
+
     if (activeMembers.length === 0) {
-      showToast('Não há Ministros da Eucaristia ativos cadastrados. Cadastre ministros primeiro.', true);
+      const msgComm = selectedCommunity === 'all'
+        ? 'Não há Ministros da Eucaristia ativos cadastrados. Cadastre ministros primeiro.'
+        : `Não há Ministros da Eucaristia ativos na comunidade "${selectedCommunity}". Cadastre ministros nela ou selecione outra comunidade.`;
+      showToast(msgComm, true);
       return;
     }
 
@@ -2592,11 +2719,12 @@ const App = (() => {
     }
 
     const range = getSelectedScheduleRange();
-    const { month, year, daysInMonth, isPartial, startDay, endDay } = range;
+    let { month, year, daysInMonth, isPartial, startDay, endDay } = range;
 
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
+    const todayDay = now.getDate();
 
     if (year < currentYear || (year === currentYear && month < currentMonth)) {
       showToast('Não é permitido gerar escalas para meses anteriores ao mês corrente.', true);
@@ -2621,29 +2749,149 @@ const App = (() => {
       }
     }
 
+    // Requisito 1: Se estamos no mês corrente após o dia 01 e a escala começa antes de hoje (ex: dia 01),
+    // questionar se inicia no dia 01, a partir de hoje ou a partir do próximo dia útil
+    if (year === currentYear && month === currentMonth && todayDay > 1 && startDay < todayDay && endDay >= todayDay) {
+      const nextBiz = getNextBusinessDayInMonth(year, month, todayDay);
+      const todayFormatted = String(todayDay).padStart(2, '0');
+      const endFormatted = String(endDay).padStart(2, '0');
+      const startOptions = [
+        {
+          value: 'today',
+          icon: '📆',
+          title: `Iniciar a partir de HOJE (Dia ${todayFormatted} até ${endFormatted})`,
+          desc: `Gera uma escala parcial começando na data de hoje, dia ${todayFormatted}/${String(month + 1).padStart(2, '0')}.`,
+          recommended: true
+        }
+      ];
+
+      if (nextBiz && nextBiz.day <= endDay) {
+        const nextBizFormatted = String(nextBiz.day).padStart(2, '0');
+        startOptions.push({
+          value: 'next_biz',
+          icon: '🗓️',
+          title: `Iniciar no próximo dia útil (Dia ${nextBizFormatted} • ${nextBiz.dayName} até ${endFormatted})`,
+          desc: `Começa a partir do próximo dia útil (${nextBizFormatted}/${String(month + 1).padStart(2, '0')}), ignorando hoje e dias anteriores.`
+        });
+      }
+
+      startOptions.push({
+        value: 'day1',
+        icon: '⏮️',
+        title: `Iniciar do Dia 01 (Dia ${String(startDay).padStart(2, '0')} até ${endFormatted})`,
+        desc: `Mantém o início desde o dia ${String(startDay).padStart(2, '0')}, mesmo o mês já estando no dia ${todayFormatted}.`
+      });
+
+      const startChoice = await showChoiceModal({
+        title: 'Qual a data de início da escala?',
+        message: `Já estamos no dia <strong>${todayFormatted} de ${getMonthName(month)}</strong>. Deseja gerar a escala desde o dia 01 ou iniciar a contar de hoje / próximo dia útil?`,
+        options: startOptions
+      });
+
+      if (!startChoice) {
+        return;
+      }
+
+      if (startChoice === 'today') {
+        startDay = todayDay;
+        isPartial = !(startDay === 1 && endDay === daysInMonth);
+      } else if (startChoice === 'next_biz' && nextBiz) {
+        startDay = nextBiz.day;
+        isPartial = !(startDay === 1 && endDay === daysInMonth);
+      }
+
+      // Sincroniza visualmente os campos de período na aba Gerar Escala
+      if (isPartial) {
+        const periodTypeSelect = document.getElementById('gen-period-type');
+        const startDayInput = document.getElementById('gen-start-day');
+        const endDayInput = document.getElementById('gen-end-day');
+        if (periodTypeSelect) periodTypeSelect.value = 'custom';
+        if (startDayInput) startDayInput.value = startDay.toString();
+        if (endDayInput) endDayInput.value = endDay.toString();
+        handlePeriodTypeChange(true);
+      }
+    }
+
+    // Requisito 4: Verifica se existem Missas de Festa no período selecionado e questiona sobre incluir outras comunidades
+    let includeAllInFestas = (selectedCommunity === 'all');
+    const festasInRange = [];
+    for (let d = startDay; d <= endDay; d++) {
+      if (Array.isArray(state.excludedDays) && state.excludedDays.includes(d)) continue;
+      const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const fMatch = state.festas.find(f => f.date === dStr);
+      if (fMatch) {
+        festasInRange.push({ day: d, title: fMatch.title });
+      }
+    }
+
+    const hasOtherCommunities = allSegmentMembers.some(m => (m.community || 'Matriz').trim().toLowerCase() !== selectedCommunity.trim().toLowerCase());
+    if (selectedCommunity !== 'all' && festasInRange.length > 0 && hasOtherCommunities) {
+      const festasPreviewHtml = festasInRange
+        .map(f => `<li>⭐ <strong>Dia ${String(f.day).padStart(2, '0')}</strong>: ${escapeHtml(f.title)}</li>`)
+        .join('');
+
+      const festaChoice = await showChoiceModal({
+        title: 'Ministros nas Missas de Festa',
+        message: `Este período contém <strong>${festasInRange.length} Missa(s) de Festa</strong>:<ul style="margin:8px 0 10px 18px; text-align:left;">${festasPreviewHtml}</ul>Atualmente a escala está definida para <strong>${escapeHtml(selectedCommunity)}</strong>. Como deseja escalar os ministros nas celebrações de festa?`,
+        options: [
+          {
+            value: 'include_all',
+            icon: '🌐',
+            title: 'Incluir TODAS as comunidades nas Missas de Festa',
+            desc: `Nos dias comuns seguem apenas os ministros de ${escapeHtml(selectedCommunity)}, mas nas Missas de Festa entram os ministros de todas as comunidades.`,
+            recommended: true
+          },
+          {
+            value: 'only_selected',
+            icon: '⛪',
+            title: `Manter apenas ministros de ${escapeHtml(selectedCommunity)}`,
+            desc: `Mesmo nas Missas de Festa, serão escalados exclusivamente os ministros de ${escapeHtml(selectedCommunity)}.`
+          }
+        ]
+      });
+
+      if (!festaChoice) {
+        return;
+      }
+
+      includeAllInFestas = (festaChoice === 'include_all');
+    }
+
     const shifts = [];
 
-    // Fila circular pointer (suporta modo unificado e filas independentes por modalidade)
+    // Fila circular pointer (suporta modo unificado, filas independentes e pool completo em festas)
     let pointerUnified = state.rotationPointer;
     let pointerWeekday = state.rotationPointer;
     let pointerWeekend = state.rotationPointer;
     let pointerFesta = state.rotationPointer;
+    let pointerFestaAll = state.rotationPointer;
     const totalMembers = activeMembers.length;
     let unfilledSlotsTotal = 0;
 
-    // Função auxiliar para pegar os próximos N ministros no ciclo respeitando estritamente a disponibilidade de modalidade e horário
+    // Função auxiliar para pegar os próximos N ministros no ciclo respeitando estritamente a disponibilidade de modalidade, horário e comunidade
     function pickNextMembers(count, shiftType, shiftTime, dateStr) {
+      const useAllPoolForFesta = (shiftType === 'festa' && includeAllInFestas && selectedCommunity !== 'all');
+      const pool = useAllPoolForFesta ? allSegmentMembers : activeMembers;
+      const poolLen = pool.length;
+
+      if (poolLen === 0) {
+        unfilledSlotsTotal += count;
+        return [];
+      }
+
       const picked = [];
       let attempts = 0;
-      const maxAttempts = totalMembers * 4;
+      const maxAttempts = poolLen * 4;
 
       while (picked.length < count && attempts < maxAttempts) {
         let currentPtr = pointerUnified;
-        if (queueMode === 'split') {
+        if (useAllPoolForFesta) {
+          currentPtr = pointerFestaAll;
+        } else if (queueMode === 'split') {
           currentPtr = (shiftType === 'weekend') ? pointerWeekend : ((shiftType === 'festa') ? pointerFesta : pointerWeekday);
         }
 
-        const member = activeMembers[currentPtr % totalMembers];
+        const member = pool[currentPtr % poolLen];
         const prefs = getMemberPrefs(member);
         
         // Regra estrita: o ministro deve estar disponível na modalidade e no horário solicitado
@@ -2651,17 +2899,23 @@ const App = (() => {
         const timeOk = isMemberAvailableForTime(member, shiftTime);
         const isEligible = modalityOk && timeOk;
 
+        const advancePtr = () => {
+          if (useAllPoolForFesta) {
+            pointerFestaAll = (pointerFestaAll + 1) % poolLen;
+          } else if (queueMode === 'split') {
+            if (shiftType === 'weekend') pointerWeekend = (pointerWeekend + 1) % poolLen;
+            else if (shiftType === 'festa') pointerFesta = (pointerFesta + 1) % poolLen;
+            else pointerWeekday = (pointerWeekday + 1) % poolLen;
+          } else {
+            pointerUnified = (pointerUnified + 1) % poolLen;
+          }
+        };
+
         if (isEligible && !picked.some(p => p.id === member.id)) {
           // Evita escalar a mesma pessoa duas vezes no mesmo dia caso ainda haja outros ministros disponíveis
           const alreadyAssignedToday = dateStr && shifts.some(s => s.date === dateStr && s.assigned.some(a => a.id === member.id));
-          if (alreadyAssignedToday && attempts < totalMembers) {
-            if (queueMode === 'split') {
-              if (shiftType === 'weekend') pointerWeekend = (pointerWeekend + 1) % totalMembers;
-              else if (shiftType === 'festa') pointerFesta = (pointerFesta + 1) % totalMembers;
-              else pointerWeekday = (pointerWeekday + 1) % totalMembers;
-            } else {
-              pointerUnified = (pointerUnified + 1) % totalMembers;
-            }
+          if (alreadyAssignedToday && attempts < poolLen) {
+            advancePtr();
             attempts++;
             continue;
           }
@@ -2669,7 +2923,8 @@ const App = (() => {
           picked.push({
             id: member.id,
             name: member.name,
-            role: member.role || 'Ministro da Eucaristia'
+            role: member.role || 'Ministro da Eucaristia',
+            community: member.community || 'Matriz'
           });
           
           // Incrementa a contagem de escalas da pessoa
@@ -2677,13 +2932,7 @@ const App = (() => {
           if (original) original.count = (original.count || 0) + 1;
         }
 
-        if (queueMode === 'split') {
-          if (shiftType === 'weekend') pointerWeekend = (pointerWeekend + 1) % totalMembers;
-          else if (shiftType === 'festa') pointerFesta = (pointerFesta + 1) % totalMembers;
-          else pointerWeekday = (pointerWeekday + 1) % totalMembers;
-        } else {
-          pointerUnified = (pointerUnified + 1) % totalMembers;
-        }
+        advancePtr();
         attempts++;
       }
 
@@ -2794,6 +3043,8 @@ const App = (() => {
       startDay: isPartial ? startDay : 1,
       endDay: isPartial ? endDay : daysInMonth,
       periodLabel: isPartial ? `Dias ${String(startDay).padStart(2, '0')} a ${String(endDay).padStart(2, '0')}` : '',
+      communityFilter: selectedCommunity,
+      includeAllInFestas,
       segment: 'Ministro da Eucaristia',
       segmentTitle: 'Ministério Extraordinário da Sagrada Comunhão (MESC)',
       excludedDays: [...(state.excludedDays || [])],
@@ -2987,6 +3238,7 @@ const App = (() => {
     const dashTotalShifts = document.getElementById('dash-total-shifts');
     const dashExpiredBanner = document.getElementById('dash-expired-schedule-banner');
     const dashExpiredText = document.getElementById('dash-expired-schedule-text');
+    const dashMetricCard = document.getElementById('dash-metric-schedule-card');
 
     if (state.currentSchedule) {
       const pSuffix = state.currentSchedule.isPartial
@@ -3009,6 +3261,10 @@ const App = (() => {
         }
       }
 
+      if (dashMetricCard) {
+        dashMetricCard.classList.toggle('is-expired-card', isExpired);
+      }
+
       if (dashExpiredBanner) {
         if (isExpired) {
           dashExpiredBanner.style.display = 'flex';
@@ -3020,6 +3276,7 @@ const App = (() => {
         }
       }
     } else {
+      if (dashMetricCard) dashMetricCard.classList.remove('is-expired-card');
       if (dashMonth) dashMonth.textContent = 'Nenhuma';
       if (dashTotalShifts) dashTotalShifts.textContent = 'Clique para gerar';
       if (dashExpiredBanner) dashExpiredBanner.style.display = 'none';
@@ -3076,7 +3333,10 @@ const App = (() => {
             <span class="queue-pos-badge">${index + 1}</span>
             <div>
               <div class="queue-name">${escapeHtml(m.name)}</div>
-              <div class="queue-role">${escapeHtml(m.role || 'Ministro')}</div>
+              <div class="queue-role" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px;">
+                <span>${escapeHtml(m.role || 'Ministro')}</span>
+                ${renderCommunityBadge(m.community || 'Matriz')}
+              </div>
             </div>
           </div>
           <div>
@@ -4868,6 +5128,67 @@ const App = (() => {
     }
   }
 
+  /**
+   * Retorna o próximo dia útil (Seg a Sex) dentro do mesmo mês após fromDay, ou null se não houver
+   */
+  function getNextBusinessDayInMonth(year, month, fromDay) {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let d = fromDay + 1; d <= daysInMonth; d++) {
+      const dt = new Date(year, month, d);
+      const dow = dt.getDay();
+      if (dow !== 0 && dow !== 6) {
+        return { day: d, dayName: getDayName(dow) };
+      }
+    }
+    return null;
+  }
+
+  let choiceResolveCallback = null;
+
+  /**
+   * Exibe modal de escolha múltipla e retorna uma Promise com o value escolhido (ou null ao cancelar)
+   */
+  function showChoiceModal({ title = 'Escolha uma Opção', message = '', options = [] }) {
+    return new Promise(resolve => {
+      choiceResolveCallback = resolve;
+      const modal = document.getElementById('modal-choice');
+      const titleEl = document.getElementById('choice-modal-title');
+      const msgEl = document.getElementById('choice-modal-message');
+      const optsContainer = document.getElementById('choice-modal-options');
+
+      if (!modal || !optsContainer) {
+        resolve(options.length > 0 ? options[0].value : null);
+        return;
+      }
+
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.innerHTML = message;
+
+      optsContainer.innerHTML = options.map(opt => `
+        <button type="button" class="choice-option-btn ${opt.recommended ? 'is-recommended' : ''}" onclick="App.closeChoiceModal('${escapeHtml(opt.value)}')">
+          <span class="choice-option-icon">${opt.icon || '👉'}</span>
+          <div class="choice-option-body">
+            <div class="choice-option-title">
+              <span>${opt.title}</span>
+              ${opt.recommended ? '<span class="choice-rec-pill">Recomendado</span>' : ''}
+            </div>
+            <div class="choice-option-desc">${opt.desc || ''}</div>
+          </div>
+        </button>
+      `).join('');
+
+      openModal('modal-choice');
+    });
+  }
+
+  function closeChoiceModal(choiceValue = null) {
+    closeModal('modal-choice');
+    if (choiceResolveCallback) {
+      choiceResolveCallback(choiceValue);
+      choiceResolveCallback = null;
+    }
+  }
+
   function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -5104,6 +5425,9 @@ const App = (() => {
     confirmSwap,
     revertSwap,
     closeConfirmModal,
+    closeChoiceModal,
+    handleGenCommunityChange,
+    populateGenCommunitySelect,
     exportToWhatsApp,
     handleTimeInput,
     handleSegmentChange,
